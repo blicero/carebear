@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 01. 02. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2025-07-03 18:08:18 krylon>
+// Time-stamp: <2025-07-03 18:54:16 krylon>
 
 //go:build ignore
 // +build ignore
@@ -58,13 +58,21 @@ var orderedSteps = []string{
 var candidates = map[string][]string{
 	"generate": []string{
 		"common",
+		"logdomain",
+		"database/query",
 	},
 	"test": []string{},
 	"vet": []string{
 		"common",
+		"database",
+		"database/query",
+		"model",
 	},
 	"lint": []string{
 		"common",
+		"database",
+		"database/query",
+		"model",
 	},
 }
 
