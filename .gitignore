@@ -1,0 +1,21 @@
+# Time-stamp: <2025-03-31 18:15:29 krylon>
+*~
+*#
+.*
+*_string.go
+*_gen.go
+*ffjson.go
+*templates.go
+build
+build_templates
+*.log
+*TAGS*
+bak.*
+*.bak
+
+*.sync-conflict-*
+
+*.exe
+
+zappelwurst
+
