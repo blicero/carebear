@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 01. 02. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2025-07-03 18:54:16 krylon>
+// Time-stamp: <2025-07-05 15:23:22 krylon>
 
 //go:build ignore
 // +build ignore
@@ -56,19 +56,19 @@ var orderedSteps = []string{
 }
 
 var candidates = map[string][]string{
-	"generate": []string{
+	"generate": {
 		"common",
 		"logdomain",
 		"database/query",
 	},
-	"test": []string{},
-	"vet": []string{
+	"test": {},
+	"vet": {
 		"common",
 		"database",
 		"database/query",
 		"model",
 	},
-	"lint": []string{
+	"lint": {
 		"common",
 		"database",
 		"database/query",
@@ -135,7 +135,7 @@ This flag is not case-sensitive.`, strings.Join(orderedSteps, ", ")))
 			fmt.Println("XXX Turning on verbose mode due to environment variable BUILD_VERBOSE")
 			minLevel = "TRACE"
 			verbose = true
-			time.Sleep(5)
+			time.Sleep(time.Second * 3)
 		}
 	}
 
@@ -191,7 +191,7 @@ This flag is not case-sensitive.`, strings.Join(orderedSteps, ", ")))
 
 	dbg.Printf("[DEBUG] orderedSteps = %s\n", orderedSteps)
 	for idx, s := range orderedSteps {
-		dbg.Printf("[TRACE] Do we run go %s? %b\n",
+		dbg.Printf("[TRACE] Do we run go %s? %t\n",
 			s,
 			steps[s])
 
@@ -222,7 +222,7 @@ This flag is not case-sensitive.`, strings.Join(orderedSteps, ", ")))
 	if steps["build"] {
 		var output []byte
 
-		dbg.Println("[INFO] Building grace\n")
+		dbg.Println("[INFO] Building carebear")
 
 		// Put aside a possibly existing binary
 		if err = backupExecutable(); err != nil {
@@ -242,7 +242,7 @@ This flag is not case-sensitive.`, strings.Join(orderedSteps, ", ")))
 		// }
 		var cmd = exec.Command("go", args...)
 		if output, err = cmd.CombinedOutput(); err != nil {
-			dbg.Printf("[ERROR] Error building grace: %s\n%s\n",
+			dbg.Printf("[ERROR] Error building carebear: %s\n%s\n",
 				err.Error(),
 				output)
 			os.Exit(1)
@@ -345,7 +345,7 @@ func worker(n int, op string, pkgq <-chan string, errq chan<- error, wg *sync.Wa
 	defer wg.Done()
 
 	for folder := range pkgq {
-		pkg = "github.com/blicero/grace/" + folder
+		pkg = "github.com/blicero/carebear/" + folder
 		dbg.Printf("[TRACE] Worker %d call %s on %s\n",
 			n,
 			op,
@@ -358,19 +358,20 @@ func worker(n int, op string, pkgq <-chan string, errq chan<- error, wg *sync.Wa
 			outw   = bufio.NewWriter(&outbuf)
 		)
 
-		if op == "lint" {
+		switch op {
+		case "lint":
 			cmd = exec.Command(lintCommand, pkg)
 			// cmd = exec.Command(
 			// 	lintCommand,
 			// 	"run",
 			// 	pkg)
-		} else if op == "test" {
+		case "test":
 			if runtime.GOOS == "openbsd" || runtime.GOARCH == "386" || runtime.GOARCH == "arm" {
 				cmd = exec.Command("go", op, "-v", "-timeout", "30m", pkg)
 			} else {
 				cmd = exec.Command("go", op, "-v", "-timeout", "30m", "-race", pkg)
 			}
-		} else {
+		default:
 			cmd = exec.Command("go", op, "-v", pkg)
 		}
 
@@ -436,7 +437,7 @@ func initLog(min string) error {
 		writer io.Writer
 		// Trailing space because Logger does not seem to insert one
 		// between fields of the line.
-		logName = "grace.build "
+		logName = "carebear.build "
 	)
 
 	// fmt.Printf("Creating Logger with minLevel = %q\n",
@@ -466,8 +467,8 @@ func initLog(min string) error {
 
 func backupExecutable() error {
 	const (
-		execPath   = "grace"
-		backupPath = "bak.grace"
+		execPath   = "carebear"
+		backupPath = "bak.carebear"
 	)
 	var (
 		exists bool
