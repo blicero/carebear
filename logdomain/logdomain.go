@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-03 18:16:56 krylon>
+// Time-stamp: <2025-07-03 22:04:30 krylon>
 
 package logdomain
 
@@ -16,3 +16,12 @@ const (
 	Database
 	Scanner
 )
+
+// AllDomains returns a slice of all valid values for logdomain.ID
+func AllDomains() []ID {
+	return []ID{
+		Common,
+		Database,
+		Scanner,
+	}
+} // func AllDomains() []ID
