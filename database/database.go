@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-05 15:14:17 krylon>
+// Time-stamp: <2025-07-05 15:30:09 krylon>
 
 package database
 
@@ -603,3 +603,55 @@ EXEC_QUERY:
 		return nil
 	}
 } // func (db *Database) DeviceAdd(dev *model.Device) error
+
+// DeviceUpdateLastSeen updates a Device's last_seen timestamp in the database.
+func (db *Database) DeviceUpdateLastSeen(dev *model.Device, t time.Time) error {
+	const qid query.ID = query.DeviceUpdateLastSeen
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Failed to prepare query %s: %s\n",
+			qid,
+			err.Error())
+		panic(err)
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var (
+		res         sql.Result
+		numAffected int64
+	)
+
+EXEC_QUERY:
+	if res, err = stmt.Exec(t.Unix(), dev.ID); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		} else {
+			err = fmt.Errorf("Cannot update LastSeen timestamp of Device %s (%d): %w",
+				dev.Name,
+				dev.ID,
+				err)
+			db.log.Printf("[ERROR] %s\n", err.Error())
+			return err
+		}
+	} else if numAffected, err = res.RowsAffected(); err != nil {
+		err = fmt.Errorf("Failed to query query result for number of affected rows: %w",
+			err)
+		db.log.Printf("[ERROR] %s\n", err.Error())
+		return err
+	} else if numAffected != 1 {
+		db.log.Printf("[ERROR] Update LastSeen timestamp of Device %s (%d) affected 0 rows\n",
+			dev.Name,
+			dev.ID)
+	} else {
+		dev.LastSeen = t
+	}
+
+	return nil
+
+} // func (db *Database) DeviceUpdateLastSeen(dev *model.Device, t time.Time) error
