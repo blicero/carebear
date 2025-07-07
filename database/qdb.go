@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 04. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-05 15:03:46 krylon>
+// Time-stamp: <2025-07-07 15:02:26 krylon>
 
 package database
 
@@ -17,4 +17,23 @@ INSERT INTO device (name, addr, bighead)
 RETURNING id
 `,
 	query.DeviceUpdateLastSeen: "UPDATE device SET last_seen = ? WHERE id = ?",
+	query.DeviceGetAll: `
+SELECT
+    id,
+    name,
+    addr,
+    bighead,
+    last_seen
+FROM device
+ORDER BY name
+`,
+	query.DeviceGetByID: `
+SELECT
+    name,
+    addr,
+    bighead,
+    last_seen
+FROM device
+WHERE id = ?
+`,
 }

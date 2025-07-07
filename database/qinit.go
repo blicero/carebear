@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-04 10:49:07 krylon>
+// Time-stamp: <2025-07-07 15:43:04 krylon>
 
 package database
 
@@ -18,7 +18,7 @@ CREATE TABLE device (
     addr        TEXT NOT NULL DEFAULT '[]',
     bighead     INTEGER NOT NULL DEFAULT 1,
     last_seen   INTEGER NOT NULL DEFAULT 0,
-    CHECK (json_valid(addr)),
+    CHECK (json_valid(addr))
 ) STRICT
 `,
 	"CREATE INDEX dev_big_idx ON device (bighead <> 0)",

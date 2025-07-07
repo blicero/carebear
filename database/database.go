@@ -2,15 +2,17 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-05 15:30:09 krylon>
+// Time-stamp: <2025-07-07 15:38:17 krylon>
 
 package database
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"regexp"
 	"sync"
@@ -21,6 +23,7 @@ import (
 	"github.com/blicero/carebear/logdomain"
 	"github.com/blicero/carebear/model"
 	"github.com/blicero/krylib"
+	_ "github.com/mattn/go-sqlite3" // Import the database driver
 )
 
 var (
@@ -655,3 +658,85 @@ EXEC_QUERY:
 	return nil
 
 } // func (db *Database) DeviceUpdateLastSeen(dev *model.Device, t time.Time) error
+
+// DeviceGetAll loads all Devices from the Database.
+func (db *Database) DeviceGetAll() ([]*model.Device, error) {
+	const qid query.ID = query.DeviceGetAll
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+	var devices = make([]*model.Device, 0)
+
+	for rows.Next() {
+		var (
+			stamp int64
+			addr  string
+			dev   = new(model.Device)
+		)
+
+		if err = rows.Scan(&dev.ID, &dev.Name, &addr, &dev.BigHead, &stamp); err != nil {
+			var ex = fmt.Errorf("Failed to scan row: %w", err)
+			db.log.Printf("[ERROR] %s\n", ex.Error())
+			return nil, err
+		}
+
+		var alist = make([]string, 0, 2)
+
+		if err = json.Unmarshal([]byte(addr), &alist); err != nil {
+			var ex = fmt.Errorf("Cannot device addresses for Device %s: %w",
+				dev.Name,
+				err)
+			db.log.Printf("[ERROR] %s\n", ex.Error())
+			return nil, err
+		}
+
+		dev.Addr = make([]net.Addr, len(alist))
+		for idx, astr := range alist {
+			var ip net.IP
+
+			if ip = net.ParseIP(astr); ip == nil {
+				var ex = fmt.Errorf("Cannot parse IP address of Device %s (%d): %q",
+					dev.Name,
+					dev.ID,
+					astr)
+				return nil, ex
+			}
+
+			var addr = &net.IPAddr{IP: ip}
+			dev.Addr[idx] = addr
+		}
+
+		devices = append(devices, dev)
+	}
+
+	return devices, nil
+} // func (db *Database) DeviceGetAll() ([]*model.Device, error)
+
+// func (db *Database) DeviceGetByID(id int64) (*model.Device, error) {
+// 	const qid query.ID = query.DeviceGetByID
+
+// } // func (db *Database) DeviceGetByID(id int64) (*model.Device, error)
