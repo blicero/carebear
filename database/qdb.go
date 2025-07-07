@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 04. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-07 15:02:26 krylon>
+// Time-stamp: <2025-07-07 15:55:50 krylon>
 
 package database
 
@@ -35,5 +35,14 @@ SELECT
     last_seen
 FROM device
 WHERE id = ?
+`,
+	query.DeviceGetByName: `
+SELECT
+    id,
+    addr,
+    bighead,
+    last_seen
+FROM device
+WHERE name = ?
 `,
 }

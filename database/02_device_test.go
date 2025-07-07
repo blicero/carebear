@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 07. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-07 15:51:27 krylon>
+// Time-stamp: <2025-07-07 16:08:04 krylon>
 
 package database
 
@@ -87,3 +87,87 @@ func TestDeviceGetall(t *testing.T) {
 			devCnt)
 	}
 } // func TestDeviceGetall(t *testing.T)
+
+func TestDeviceGetByID(t *testing.T) {
+	if tdb == nil {
+		t.SkipNow()
+	}
+
+	var (
+		err  error
+		xdev *model.Device
+	)
+
+	for _, dev := range tdev {
+		if xdev, err = tdb.DeviceGetByID(dev.ID); err != nil {
+			t.Fatalf("DeviceGetByID failed: %s", err.Error())
+		} else if xdev == nil {
+			t.Fatalf("DeviceGetByID return nil for Device with ID %d (%s)",
+				dev.ID,
+				dev.Name)
+		}
+
+		var addr01, addr02 string
+
+		addr01 = dev.AddrStr()
+		addr02 = xdev.AddrStr()
+
+		if addr01 != addr02 {
+			t.Fatalf("Unexpected address(es) for Device %d (%s):\nExpected:\t%s\nGot:\t%s\n",
+				dev.ID,
+				dev.Name,
+				addr01,
+				addr02)
+		}
+	}
+
+	var i int64
+
+	for i = 1000; i < 2000; i++ {
+		var dev *model.Device
+
+		if dev, err = tdb.DeviceGetByID(i); err != nil {
+			t.Fatalf("Failed to look up Device %d: %s",
+				i,
+				err.Error())
+		} else if dev != nil {
+			t.Fatalf("Looking for Device %d should not have returned a value: %#v",
+				i,
+				dev)
+		}
+	}
+} // func TestDeviceGetByID(t *testing.T)
+
+func TestDeviceGetByName(t *testing.T) {
+	if tdb == nil {
+		t.SkipNow()
+	}
+
+	var (
+		err  error
+		xdev *model.Device
+	)
+
+	for _, dev := range tdev {
+		if xdev, err = tdb.DeviceGetByName(dev.Name); err != nil {
+			t.Fatalf("DeviceGetByID failed: %s", err.Error())
+		} else if xdev == nil {
+			t.Fatalf("DeviceGetByID return nil for Device with ID %d (%s)",
+				dev.ID,
+				dev.Name)
+		}
+
+		var addr01, addr02 string
+
+		addr01 = dev.AddrStr()
+		addr02 = xdev.AddrStr()
+
+		if addr01 != addr02 {
+			t.Fatalf("Unexpected address(es) for Device %d (%s):\nExpected:\t%s\nGot:\t%s\n",
+				dev.ID,
+				dev.Name,
+				addr01,
+				addr02)
+		}
+	}
+} // func TestDeviceGetByID(t *testing.T)
