@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2025-07-08 15:33:34 krylon>
+# Time-stamp: <2025-07-08 19:52:02 krylon>
 #+TAGS: internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
 #+TAGS: optimize(o) refactor(r) cleanup(c)
@@ -14,15 +14,15 @@
   :END:
 ** Clocktable
    #+BEGIN: clocktable :scope file :maxlevel 255 :emphasize t
-   #+CAPTION: Clock summary at [2025-07-08 Di 11:57]
+   #+CAPTION: Clock summary at [2025-07-08 Di 19:52]
    | Headline               | Time   |        |      |
    |------------------------+--------+--------+------|
-   | *Total time*           | *2:50* |        |      |
+   | *Total time*           | *4:55* |        |      |
    |------------------------+--------+--------+------|
-   | *Care Bear [0/0]*      | *2:50* |        |      |
-   | \_  /Components [0/0]/ |        | /2:50/ |      |
-   | \_    Database [0/0]   |        |        | 2:44 |
-   | \_    Scanner [0/0]    |        |        | 0:06 |
+   | *Care Bear [0/0]*      | *4:55* |        |      |
+   | \_  /Components [0/0]/ |        | /4:55/ |      |
+   | \_    Database [0/0]   |        |        | 3:53 |
+   | \_    Scanner [0/0]    |        |        | 1:02 |
    #+END:
 ** Components [0/0]
 *** Model [0/0]
@@ -36,6 +36,7 @@
     :VISIBILITY: children
     :END:
     :LOGBOOK:
+    CLOCK: [2025-07-08 Di 18:42]--[2025-07-08 Di 19:51] =>  1:09
     CLOCK: [2025-07-07 Mo 14:49]--[2025-07-07 Mo 16:08] =>  1:19
     CLOCK: [2025-07-07 Mo 14:40]--[2025-07-07 Mo 14:48] =>  0:08
     CLOCK: [2025-07-05 Sa 14:48]--[2025-07-05 Sa 15:44] =>  0:56
