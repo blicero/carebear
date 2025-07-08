@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-05 15:10:23 krylon>
+// Time-stamp: <2025-07-08 15:13:49 krylon>
 
 // Package model provides data types used throughout the application.
 package model
@@ -45,3 +45,35 @@ func (d *Device) AddrStr() string {
 	buf.WriteString("]")
 	return buf.String()
 } // func (d *Device) AddrStr() string
+
+// Network represents a range of IP addresses where Devices may reside.
+type Network struct {
+	ID          int64
+	Addr        *net.IPNet
+	Description string
+	LastScan    time.Time
+}
+
+// NewNetwork creates a fresh Network with the given address and description.
+func NewNetwork(addr, desc string) (*Network, error) {
+	var (
+		err error
+		n   = &Network{Description: desc}
+	)
+
+	if _, n.Addr, err = net.ParseCIDR(addr); err != nil {
+		return nil, err
+	}
+
+	return n, nil
+} // func NewNetwork(addr, desc string) (*Network, error)
+
+// http://play.golang.org/p/m8TNTtygK0
+func inc(ip net.IP) {
+	for j := len(ip) - 1; j >= 0; j-- {
+		ip[j]++
+		if ip[j] > 0 {
+			break
+		}
+	}
+}
