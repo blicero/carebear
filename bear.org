@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2025-07-08 11:57:42 krylon>
+# Time-stamp: <2025-07-08 15:33:34 krylon>
 #+TAGS: internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
 #+TAGS: optimize(o) refactor(r) cleanup(c)
@@ -47,8 +47,11 @@
     :VISIBILITY: children
     :END:
     :LOGBOOK:
+    CLOCK: [2025-07-08 Di 14:37]--[2025-07-08 Di 15:33] =>  0:56
     CLOCK: [2025-07-08 Di 11:51]--[2025-07-08 Di 11:57] =>  0:06
     :END:
+    I should look into https://github.com/korylprince/ipnetgen to enumerate or
+    iterate over all addresses in a network.
 *** UI [0/0]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
