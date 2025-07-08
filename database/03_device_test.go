@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 07. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-07 16:08:04 krylon>
+// Time-stamp: <2025-07-08 19:40:34 krylon>
 
 package database
 
@@ -21,7 +21,7 @@ const (
 var tdev []*model.Device
 
 func TestDeviceAdd(t *testing.T) {
-	if tdb == nil {
+	if tdb == nil || tnet == nil || tnet.ID == 0 {
 		t.SkipNow()
 	}
 
@@ -45,7 +45,8 @@ func TestDeviceAdd(t *testing.T) {
 
 	for n = 1; n <= devCnt; n++ {
 		var dev = &model.Device{
-			Name: fmt.Sprintf("dev%02d", n),
+			Name:  fmt.Sprintf("dev%02d", n),
+			NetID: tnet.ID,
 			Addr: []net.Addr{
 				&net.IPAddr{
 					IP: net.IPv4(192, 168, 0, byte(n)),

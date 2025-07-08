@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-07 16:04:22 krylon>
+// Time-stamp: <2025-07-08 19:45:05 krylon>
 
 package database
 
@@ -246,7 +246,7 @@ PREPARE_QUERY:
 			goto PREPARE_QUERY
 		}
 
-		db.log.Printf("[ERROR] Cannor parse query %s: %s\n%s\n",
+		db.log.Printf("[ERROR] Cannot parse query %s: %s\n%s\n",
 			id,
 			err.Error(),
 			qdb[id])
@@ -551,6 +551,326 @@ func (db *Database) Commit() error {
 	return nil
 } // func (db *Database) Commit() error
 
+// NetworkAdd adds a Network to the Database.
+func (db *Database) NetworkAdd(n *model.Network) error {
+	const qid query.ID = query.NetworkAdd
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Failed to prepare query %s: %s\n",
+			qid,
+			err.Error())
+		panic(err)
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(n.Addr.String(), n.Description); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		} else {
+			err = fmt.Errorf("Cannot add Network %s to database: %w",
+				n.Addr,
+				err)
+			db.log.Printf("[ERROR] %s\n", err.Error())
+			return err
+		}
+	} else {
+		var id int64
+
+		defer rows.Close()
+
+		if !rows.Next() {
+			// CANTHAPPEN
+			db.log.Printf("[ERROR] Query %s did not return a value\n",
+				qid)
+			return fmt.Errorf("Query %s did not return a value", qid)
+		} else if err = rows.Scan(&id); err != nil {
+			var ex = fmt.Errorf("Failed to get ID for newly added host %s: %w",
+				n.Addr,
+				err)
+			db.log.Printf("[ERROR] %s\n", ex.Error())
+			return ex
+		}
+
+		n.ID = id
+		return nil
+	}
+} // func (db *Database) NetworkAdd(n *model.Network) error
+
+// NetworkUpdateScanStamp sets a Network's LastScan timestamp in the Database.
+func (db *Database) NetworkUpdateScanStamp(n *model.Network, t time.Time) error {
+	const qid query.ID = query.NetworkUpdateScanStamp
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Failed to prepare query %s: %s\n",
+			qid,
+			err.Error())
+		panic(err)
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var (
+		res         sql.Result
+		numAffected int64
+	)
+
+EXEC_QUERY:
+	if res, err = stmt.Exec(t.Unix(), n.ID); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		} else {
+			err = fmt.Errorf("Cannot update LastScan timestamp of Network %s (%d): %w",
+				n.Addr,
+				n.ID,
+				err)
+			db.log.Printf("[ERROR] %s\n", err.Error())
+			return err
+		}
+	} else if numAffected, err = res.RowsAffected(); err != nil {
+		err = fmt.Errorf("Failed to query query result for number of affected rows: %w",
+			err)
+		db.log.Printf("[ERROR] %s\n", err.Error())
+		return err
+	} else if numAffected != 1 {
+		db.log.Printf("[ERROR] Update LastScan timestamp of Network %s (%d) affected 0 rows\n",
+			n.Addr,
+			n.ID)
+	} else {
+		n.LastScan = t
+	}
+
+	return nil
+} // func (db *Database) NetworkUpdateScanStamp(n *model.Network) error
+
+// NetworkUpdateDesc updates a Network's Description.
+func (db *Database) NetworkUpdateDesc(n *model.Network, desc string) error {
+	const qid query.ID = query.NetworkUpdateDesc
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Failed to prepare query %s: %s\n",
+			qid,
+			err.Error())
+		panic(err)
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var (
+		res         sql.Result
+		numAffected int64
+	)
+
+EXEC_QUERY:
+	if res, err = stmt.Exec(desc, n.ID); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		} else {
+			err = fmt.Errorf("Cannot update LastScan timestamp of Network %s (%d): %w",
+				n.Addr,
+				n.ID,
+				err)
+			db.log.Printf("[ERROR] %s\n", err.Error())
+			return err
+		}
+	} else if numAffected, err = res.RowsAffected(); err != nil {
+		err = fmt.Errorf("Failed to query query result for number of affected rows: %w",
+			err)
+		db.log.Printf("[ERROR] %s\n", err.Error())
+		return err
+	} else if numAffected != 1 {
+		db.log.Printf("[ERROR] Update LastScan timestamp of Network %s (%d) affected 0 rows\n",
+			n.Addr,
+			n.ID)
+	} else {
+		n.Description = desc
+	}
+
+	return nil
+} // func (db *Database) NetworkUpdateDesc(n *model.Network, desc string) error
+
+// NetworkGetAll loads all Networks from the Database.
+func (db *Database) NetworkGetAll() ([]*model.Network, error) {
+	const qid query.ID = query.NetworkGetAll
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+	var networks = make([]*model.Network, 0)
+
+	for rows.Next() {
+		var (
+			stamp int64
+			addr  string
+			n     = new(model.Network)
+		)
+
+		if err = rows.Scan(&n.ID, &addr, &n.Description, &stamp); err != nil {
+			var ex = fmt.Errorf("Failed to scan row: %w", err)
+			db.log.Printf("[ERROR] %s\n", ex.Error())
+			return nil, ex
+		} else if _, n.Addr, err = net.ParseCIDR(addr); err != nil {
+			var ex = fmt.Errorf("Failed to parse Network address %q: %w",
+				addr,
+				err)
+			return nil, ex
+		}
+
+		n.LastScan = time.Unix(stamp, 0)
+		networks = append(networks, n)
+	}
+
+	return networks, nil
+} // func (db *Database) NetworkGetAll() ([]*model.Network, error)
+
+// NetworkGetByID loads the Network with the given ID (if it exists).
+func (db *Database) NetworkGetByID(id int64) (*model.Network, error) {
+	const qid query.ID = query.NetworkGetByID
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(id); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+
+	if rows.Next() {
+		var (
+			stamp int64
+			addr  string
+			n     = &model.Network{ID: id}
+		)
+
+		if err = rows.Scan(&addr, &n.Description, &stamp); err != nil {
+			var ex = fmt.Errorf("Failed to scan row: %w", err)
+			db.log.Printf("[ERROR] %s\n", ex.Error())
+			return nil, ex
+		} else if _, n.Addr, err = net.ParseCIDR(addr); err != nil {
+			var ex = fmt.Errorf("Cannot parse Network address %q: %w",
+				addr,
+				err)
+			db.log.Printf("[ERROR] %s\n", ex.Error())
+			return nil, ex
+		}
+
+		n.LastScan = time.Unix(stamp, 0)
+		return n, nil
+	}
+
+	return nil, nil
+} // func (db *Database) NetworkGetByID(id int64) (*model.Network, error)
+
+// NetworkGetByAddr looks up a Networks by its address.
+func (db *Database) NetworkGetByAddr(addr *net.IPNet) (*model.Network, error) {
+	const qid query.ID = query.NetworkGetByID
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(addr.String()); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+
+	if rows.Next() {
+		var (
+			stamp int64
+			n     = &model.Network{Addr: addr}
+		)
+
+		if err = rows.Scan(&n.ID, &n.Description, &stamp); err != nil {
+			var ex = fmt.Errorf("Failed to scan row: %w", err)
+			db.log.Printf("[ERROR] %s\n", ex.Error())
+			return nil, ex
+		}
+
+		n.LastScan = time.Unix(stamp, 0)
+		return n, nil
+	}
+
+	return nil, nil
+} // func (db *Database) NetworkGetByAddr(addr string) (*model.Network, error)
+
 // DeviceAdd registers a new device in the database.
 func (db *Database) DeviceAdd(dev *model.Device) error {
 	const qid query.ID = query.DeviceAdd
@@ -571,7 +891,7 @@ func (db *Database) DeviceAdd(dev *model.Device) error {
 	var rows *sql.Rows
 
 EXEC_QUERY:
-	if rows, err = stmt.Query(dev.Name, dev.AddrStr(), dev.BigHead); err != nil {
+	if rows, err = stmt.Query(dev.Name, dev.NetID, dev.AddrStr(), dev.BigHead); err != nil {
 		if worthARetry(err) {
 			waitForRetry()
 			goto EXEC_QUERY
@@ -656,7 +976,6 @@ EXEC_QUERY:
 	}
 
 	return nil
-
 } // func (db *Database) DeviceUpdateLastSeen(dev *model.Device, t time.Time) error
 
 // DeviceGetAll loads all Devices from the Database.
@@ -698,10 +1017,10 @@ EXEC_QUERY:
 			dev   = new(model.Device)
 		)
 
-		if err = rows.Scan(&dev.ID, &dev.Name, &addr, &dev.BigHead, &stamp); err != nil {
+		if err = rows.Scan(&dev.ID, &dev.NetID, &dev.Name, &addr, &dev.BigHead, &stamp); err != nil {
 			var ex = fmt.Errorf("Failed to scan row: %w", err)
 			db.log.Printf("[ERROR] %s\n", ex.Error())
-			return nil, err
+			return nil, ex
 		}
 
 		var alist = make([]string, 0, 2)
@@ -711,7 +1030,7 @@ EXEC_QUERY:
 				dev.Name,
 				err)
 			db.log.Printf("[ERROR] %s\n", ex.Error())
-			return nil, err
+			return nil, ex
 		}
 
 		dev.Addr = make([]net.Addr, len(alist))
@@ -774,7 +1093,7 @@ EXEC_QUERY:
 			dev   = &model.Device{ID: id}
 		)
 
-		if err = rows.Scan(&dev.Name, &addr, &dev.BigHead, &stamp); err != nil {
+		if err = rows.Scan(&dev.NetID, &dev.Name, &addr, &dev.BigHead, &stamp); err != nil {
 			var ex = fmt.Errorf("Failed to scan row: %w", err)
 			db.log.Printf("[ERROR] %s\n", ex.Error())
 			return nil, err
@@ -787,7 +1106,7 @@ EXEC_QUERY:
 				dev.Name,
 				err)
 			db.log.Printf("[ERROR] %s\n", ex.Error())
-			return nil, err
+			return nil, ex
 		}
 
 		dev.Addr = make([]net.Addr, len(alist))
@@ -850,10 +1169,10 @@ EXEC_QUERY:
 			dev   = &model.Device{Name: name}
 		)
 
-		if err = rows.Scan(&dev.ID, &addr, &dev.BigHead, &stamp); err != nil {
+		if err = rows.Scan(&dev.ID, &dev.NetID, &addr, &dev.BigHead, &stamp); err != nil {
 			var ex = fmt.Errorf("Failed to scan row: %w", err)
 			db.log.Printf("[ERROR] %s\n", ex.Error())
-			return nil, err
+			return nil, ex
 		}
 
 		var alist = make([]string, 0, 2)
@@ -863,7 +1182,7 @@ EXEC_QUERY:
 				dev.Name,
 				err)
 			db.log.Printf("[ERROR] %s\n", ex.Error())
-			return nil, err
+			return nil, ex
 		}
 
 		dev.Addr = make([]net.Addr, len(alist))

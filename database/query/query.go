@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-07 14:50:37 krylon>
+// Time-stamp: <2025-07-08 19:40:38 krylon>
 
 // Package query provides symbolic constants to identifiy database queries.
 package query
@@ -13,7 +13,13 @@ package query
 type ID uint8
 
 const (
-	DeviceAdd ID = iota
+	NetworkAdd ID = iota
+	NetworkUpdateScanStamp
+	NetworkUpdateDesc
+	NetworkGetAll
+	NetworkGetByID
+	NetworkGetByAddr
+	DeviceAdd
 	DeviceUpdateLastSeen
 	DeviceGetAll
 	DeviceGetByID

@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-08 15:13:49 krylon>
+// Time-stamp: <2025-07-08 18:44:14 krylon>
 
 // Package model provides data types used throughout the application.
 package model
@@ -11,7 +11,47 @@ import (
 	"net"
 	"strings"
 	"time"
+
+	"github.com/korylprince/ipnetgen"
 )
+
+// Network represents a range of IP addresses where Devices may reside.
+type Network struct {
+	ID          int64
+	Addr        *net.IPNet
+	Description string
+	LastScan    time.Time
+}
+
+// NewNetwork creates a fresh Network with the given address and description.
+func NewNetwork(addr, desc string) (*Network, error) {
+	var (
+		err error
+		n   = &Network{Description: desc}
+	)
+
+	if _, n.Addr, err = net.ParseCIDR(addr); err != nil {
+		return nil, err
+	}
+
+	return n, nil
+} // func NewNetwork(addr, desc string) (*Network, error)
+
+func (n *Network) Enumerate(q chan<- net.IP) error {
+	gen, err := ipnetgen.New(n.Addr.String())
+
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		for ip := gen.Next(); ip != nil; ip = gen.Next() {
+			q <- ip
+		}
+	}()
+
+	return nil
+} // func (n *Network) Enumerate(q chan<- net.IP)
 
 // Device is a computer - in the most inclusive sense of the word - that is connected to
 // an IP network.
@@ -20,6 +60,7 @@ import (
 // are NOT BigHeads).
 type Device struct {
 	ID       int64
+	NetID    int64
 	Name     string
 	Addr     []net.Addr
 	BigHead  bool
@@ -46,34 +87,12 @@ func (d *Device) AddrStr() string {
 	return buf.String()
 } // func (d *Device) AddrStr() string
 
-// Network represents a range of IP addresses where Devices may reside.
-type Network struct {
-	ID          int64
-	Addr        *net.IPNet
-	Description string
-	LastScan    time.Time
-}
-
-// NewNetwork creates a fresh Network with the given address and description.
-func NewNetwork(addr, desc string) (*Network, error) {
-	var (
-		err error
-		n   = &Network{Description: desc}
-	)
-
-	if _, n.Addr, err = net.ParseCIDR(addr); err != nil {
-		return nil, err
-	}
-
-	return n, nil
-} // func NewNetwork(addr, desc string) (*Network, error)
-
 // http://play.golang.org/p/m8TNTtygK0
-func inc(ip net.IP) {
-	for j := len(ip) - 1; j >= 0; j-- {
-		ip[j]++
-		if ip[j] > 0 {
-			break
-		}
-	}
-}
+// func inc(ip net.IP) {
+// 	for j := len(ip) - 1; j >= 0; j-- {
+// 		ip[j]++
+// 		if ip[j] > 0 {
+// 			break
+// 		}
+// 	}
+// }
