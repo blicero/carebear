@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2025-07-07 16:08:48 krylon>
+# Time-stamp: <2025-07-08 11:57:42 krylon>
 #+TAGS: internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
 #+TAGS: optimize(o) refactor(r) cleanup(c)
@@ -14,14 +14,15 @@
   :END:
 ** Clocktable
    #+BEGIN: clocktable :scope file :maxlevel 255 :emphasize t
-   #+CAPTION: Clock summary at [2025-07-07 Mo 16:08]
+   #+CAPTION: Clock summary at [2025-07-08 Di 11:57]
    | Headline               | Time   |        |      |
    |------------------------+--------+--------+------|
-   | *Total time*           | *2:44* |        |      |
+   | *Total time*           | *2:50* |        |      |
    |------------------------+--------+--------+------|
-   | *Care Bear [0/0]*      | *2:44* |        |      |
-   | \_  /Components [0/0]/ |        | /2:44/ |      |
+   | *Care Bear [0/0]*      | *2:50* |        |      |
+   | \_  /Components [0/0]/ |        | /2:50/ |      |
    | \_    Database [0/0]   |        |        | 2:44 |
+   | \_    Scanner [0/0]    |        |        | 0:06 |
    #+END:
 ** Components [0/0]
 *** Model [0/0]
@@ -44,6 +45,9 @@
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
     :VISIBILITY: children
+    :END:
+    :LOGBOOK:
+    CLOCK: [2025-07-08 Di 11:51]--[2025-07-08 Di 11:57] =>  0:06
     :END:
 *** UI [0/0]
     :PROPERTIES:
