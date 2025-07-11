@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-08 18:44:14 krylon>
+// Time-stamp: <2025-07-11 15:07:06 krylon>
 
 // Package model provides data types used throughout the application.
 package model
@@ -37,6 +37,8 @@ func NewNetwork(addr, desc string) (*Network, error) {
 	return n, nil
 } // func NewNetwork(addr, desc string) (*Network, error)
 
+// Enumerate generates all IP addresses for the Network and sends them through the channel
+// passed in as its argument.
 func (n *Network) Enumerate(q chan<- net.IP) error {
 	gen, err := ipnetgen.New(n.Addr.String())
 
@@ -48,6 +50,7 @@ func (n *Network) Enumerate(q chan<- net.IP) error {
 		for ip := gen.Next(); ip != nil; ip = gen.Next() {
 			q <- ip
 		}
+		close(q)
 	}()
 
 	return nil
