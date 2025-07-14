@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 07. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2025-07-03 18:14:51 krylon>
+// Time-stamp: <2025-07-14 14:33:56 krylon>
 
 // Package common contains definitions used throughout the application
 package common
@@ -59,6 +59,10 @@ var LogLevels = []logutils.LogLevel{
 	"CANTHAPPEN",
 	"SILENT",
 }
+
+// SuffixPattern is a regular expression that matches the suffix of a file name.
+// For "text.txt", it should match ".txt" and capture "txt".
+var SuffixPattern = regexp.MustCompile("([.][^.]+)$")
 
 // PackageLevels defines minimum log levels per package.
 var PackageLevels = make(map[logdomain.ID]logutils.LogLevel, len(LogLevels))

@@ -1,8 +1,8 @@
-// /home/krylon/go/src/github.com/blicero/donkey/database/00_database_main_test.go
+// /home/krylon/go/src/github.com/blicero/carebear/database/00_database_main_test.go
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 06. 2024 by Benjamin Walkenhorst
 // (c) 2024 Benjamin Walkenhorst
-// Time-stamp: <2025-07-07 14:45:48 krylon>
+// Time-stamp: <2025-07-14 14:34:40 krylon>
 
 package database
 
