@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-03 22:04:30 krylon>
+// Time-stamp: <2025-07-14 14:31:10 krylon>
 
 package logdomain
 
@@ -14,7 +14,9 @@ type ID uint8
 const (
 	Common ID = iota
 	Database
+	DBPool
 	Scanner
+	Web
 )
 
 // AllDomains returns a slice of all valid values for logdomain.ID
@@ -22,6 +24,8 @@ func AllDomains() []ID {
 	return []ID{
 		Common,
 		Database,
+		DBPool,
 		Scanner,
+		Web,
 	}
 } // func AllDomains() []ID

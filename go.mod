@@ -4,9 +4,11 @@ go 1.24.4
 
 require (
 	github.com/blicero/krylib v0.2.1
+	github.com/gorilla/mux v1.8.1
 	github.com/hashicorp/logutils v1.0.0
 	github.com/korylprince/ipnetgen v1.0.1
 	github.com/mattn/go-sqlite3 v1.14.28
+	github.com/mborgerson/GoTruncateHtml v0.0.0-20150507032438-125d9154cd1e
 	github.com/odeke-em/go-uuid v0.0.0-20151221120446-b211d769a9aa
 	github.com/prometheus-community/pro-bing v0.7.0
 )

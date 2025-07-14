@@ -1,0 +1,55 @@
+{{ define "head" }}
+{{/* Time-stamp: <2025-07-14 14:51:51 krylon> */}}
+<head>
+  <title>{{ app_string }}@{{ hostname  }} - {{ .Title }}</title>
+  
+  <meta charset="utf-8">
+
+  <script src="/static/jquery-3.7.1.min.js"></script>
+  <script src="/static/bootstrap.bundle.min.js"></script>
+  <script src="/static/underscore.js"></script>
+  <script src="/static/settings.js"></script>
+  <script src="/static/interact.js"></script>
+  {{/* <script src="/static/sha512.min.js"></script> */}}
+
+  <script>
+   $(document).ready(function() {
+     initSettings();
+     // Start the heartbeat loop
+     beaconLoop();
+
+     // $("#msg_check_interval")[0].value = settings.messages.interval;
+     // We delay the start of the message loop, because it gave me
+     // weird errors when I called it right away.
+     // window.setTimeout(getNewMessages, 1000);
+
+
+     curMessageCnt = {{ len .Messages }};
+     if (curMessageCnt == 0) {
+       $("#msg_tbl").hide();
+     }
+
+     {{ if .TestMsgGen }}
+     try {
+       $("#msg_check_switch")[0].checked = settings.messages.queryEnabled;
+     } catch (err) {
+       console.log(err);
+       // alert(err);
+     }
+     {{ else }}
+     window.setTimeout(function() { settings.messages.queryEnabled = true; }, 250);
+     {{ end }}
+
+     if (settings.items.hideboring) {
+       hide_boring_items();
+     }
+   });
+  </script>
+
+  <link rel="stylesheet" type="text/css" href="/static/style.css" />
+  {{/* <link rel="stylesheet" type="text/css" href="/static/normalize.css" /> */}}
+  <link rel="stylesheet" type="text/css" href="/static/bootstrap.min.css" />
+  <link rel="stylesheet" href="/static/bootstrap-reboot.min.css" />
+  <link rel="stylesheet" href="/static/bootstrap-utilities.min.css" />
+</head>
+{{ end }}
