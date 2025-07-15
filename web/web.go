@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 07. 06. 2024 by Benjamin Walkenhorst
 // (c) 2024 Benjamin Walkenhorst
-// Time-stamp: <2025-07-14 16:30:36 krylon>
+// Time-stamp: <2025-07-15 17:21:26 krylon>
 
 package web
 
@@ -193,7 +193,7 @@ func (srv *Server) handleMain(w http.ResponseWriter, r *http.Request) {
 		r.RemoteAddr)
 
 	const (
-		tmplName  = "index"
+		tmplName  = "main"
 		recentCnt = 20
 	)
 
@@ -238,7 +238,7 @@ func (srv *Server) handleFavIco(w http.ResponseWriter, request *http.Request) {
 		request.URL.EscapedPath())
 
 	const (
-		filename = "html/static/favicon.ico"
+		filename = "assets/static/favicon.ico"
 		mimeType = "image/vnd.microsoft.icon"
 	)
 
@@ -274,7 +274,7 @@ func (srv *Server) handleStaticFile(w http.ResponseWriter, request *http.Request
 
 	vars := mux.Vars(request)
 	filename := vars["file"]
-	path := filepath.Join("html", "static", filename)
+	path := filepath.Join("assets", "static", filename)
 
 	var mimeType string
 
