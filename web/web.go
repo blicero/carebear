@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 07. 06. 2024 by Benjamin Walkenhorst
 // (c) 2024 Benjamin Walkenhorst
-// Time-stamp: <2025-07-15 17:21:26 krylon>
+// Time-stamp: <2025-07-15 18:44:58 krylon>
 
 package web
 
@@ -135,6 +135,7 @@ func Create(addr string) (*Server, error) {
 	srv.router.HandleFunc("/favicon.ico", srv.handleFavIco)
 	srv.router.HandleFunc("/static/{file}", srv.handleStaticFile)
 	srv.router.HandleFunc("/{page:(?:index|main|start)?$}", srv.handleMain)
+	srv.router.HandleFunc("/network/all", srv.handleNetworkAll)
 
 	// Agent handlers
 	// srv.router.HandleFunc("/ws/register", srv.handleClientRegister)
@@ -232,6 +233,61 @@ func (srv *Server) handleMain(w http.ResponseWriter, r *http.Request) {
 		srv.sendErrorMessage(w, msg)
 	}
 } // func (srv *Server) handleMain(w http.ResponseWriter, r *http.Request)
+
+func (srv *Server) handleNetworkAll(w http.ResponseWriter, r *http.Request) {
+	srv.log.Printf("[TRACE] Handle %s from %s\n",
+		r.URL,
+		r.RemoteAddr)
+
+	const (
+		tmplName = "network_all"
+	)
+
+	var (
+		err  error
+		msg  string
+		db   *database.Database
+		tmpl *template.Template
+		data = tmplDataNetwork{
+			tmplDataBase: tmplDataBase{
+				Title: "Networks",
+				Debug: common.Debug,
+				URL:   r.URL.String(),
+			},
+		}
+	)
+
+	db = srv.pool.Get()
+	defer srv.pool.Put(db)
+
+	if data.Networks, err = db.NetworkGetAll(); err != nil {
+		msg = fmt.Sprintf("Failed to load networks from database: %s",
+			err.Error())
+		srv.log.Printf("[ERROR] %s\n", msg)
+		srv.sendErrorMessage(w, msg)
+		return
+	} else if data.DevCnt, err = db.NetworkDevCnt(); err != nil {
+		msg = fmt.Sprintf("Failed to load device count per network from database: %s",
+			err.Error())
+		srv.log.Printf("[ERROR] %s\n", msg)
+		srv.sendErrorMessage(w, msg)
+		return
+	}
+
+	if tmpl = srv.tmpl.Lookup(tmplName); tmpl == nil {
+		msg = fmt.Sprintf("Could not find template %q", tmplName)
+		srv.log.Println("[CRITICAL] " + msg)
+		srv.sendErrorMessage(w, msg)
+		return
+	}
+
+	w.Header().Set("Cache-Control", noCache)
+	if err = tmpl.Execute(w, &data); err != nil {
+		srv.log.Printf("[ERROR] Failed to render template %s: %s\n",
+			tmplName,
+			err.Error())
+	}
+} // func (srv *Server) handleNetworkAll(w http.ResponseWriter, r *http.Request)
 
 func (srv *Server) handleFavIco(w http.ResponseWriter, request *http.Request) {
 	srv.log.Printf("[TRACE] Handle request for %s\n",

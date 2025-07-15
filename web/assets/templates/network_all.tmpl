@@ -1,0 +1,49 @@
+{{ define "network_all" }}
+{{/* Created on 10. 06. 2024 */}}
+{{/* Time-stamp: <2025-07-15 18:45:44 krylon> */}}
+<!DOCTYPE html>
+<html>
+    {{ template "head" . }}
+
+    <body>
+        {{ template "intro" . }}
+
+        <div id="form_network" class="container-fluid">
+            {{ template "form_network" . }}
+        </div>
+
+        <div id="table_networks" class="container-fluid">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Address</th>
+                        <th>Description</th>
+                        <th># Devices</th>
+                        <th>Last Scan</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {{ $cnt := .DevCnt }}
+                    {{ range .Networks }}
+                    <tr>
+                        <td>{{ .ID }}</td>
+                        <td>
+                            <a href="/network/{{ .ID }}">
+                                {{ .Addr }}
+                            </a>
+                        </td>
+                        <td>{{ .Description }}</td>
+                        <td>{{ index $cnt .ID }}</td>
+                        <td>{{ fmt_time .LastScan }}</td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
+
+        {{ template "footer" . }}
+    </body>
+</html>
+{{ end }}
