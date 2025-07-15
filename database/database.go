@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-08 19:45:05 krylon>
+// Time-stamp: <2025-07-15 18:21:49 krylon>
 
 package database
 
@@ -870,6 +870,56 @@ EXEC_QUERY:
 
 	return nil, nil
 } // func (db *Database) NetworkGetByAddr(addr string) (*model.Network, error)
+
+// NetworkDevCnt returns a map that contains the number of devices per network.
+func (db *Database) NetworkDevCnt() (map[int64]int, error) {
+	const qid query.ID = query.NetworkDevCnt
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+	var cntMap = make(map[int64]int)
+
+	for rows.Next() {
+		var (
+			netID int64
+			cnt   int
+		)
+
+		if err = rows.Scan(&netID, &cnt); err != nil {
+			var ex = fmt.Errorf("Failed to scan data from row: %w", err)
+			db.log.Printf("[ERROR] %s\n", ex.Error())
+			return nil, ex
+		}
+
+		cntMap[netID] = cnt
+	}
+
+	return cntMap, nil
+} // func (db *Database) NetworkDevCnt() (map[int64]int, error)
 
 // DeviceAdd registers a new device in the database.
 func (db *Database) DeviceAdd(dev *model.Device) error {

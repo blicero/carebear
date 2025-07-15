@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 04. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-08 19:50:12 krylon>
+// Time-stamp: <2025-07-15 18:16:45 krylon>
 
 package database
 
@@ -37,6 +37,13 @@ SELECT
 	last_scan
 FROM network
 WHERE addr = ?
+`,
+	query.NetworkDevCnt: `
+SELECT
+	net_id,
+	COUNT(net_id) AS cnt
+FROM device
+GROUP BY net_id
 `,
 	query.DeviceAdd: `
 INSERT INTO device (name, net_id, addr, bighead)

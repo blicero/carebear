@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-08 19:40:38 krylon>
+// Time-stamp: <2025-07-15 18:15:11 krylon>
 
 // Package query provides symbolic constants to identifiy database queries.
 package query
@@ -19,6 +19,7 @@ const (
 	NetworkGetAll
 	NetworkGetByID
 	NetworkGetByAddr
+	NetworkDevCnt
 	DeviceAdd
 	DeviceUpdateLastSeen
 	DeviceGetAll
