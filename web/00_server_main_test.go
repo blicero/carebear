@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 06. 2024 by Benjamin Walkenhorst
 // (c) 2024 Benjamin Walkenhorst
-// Time-stamp: <2025-07-14 16:29:00 krylon>
+// Time-stamp: <2025-07-14 17:33:29 krylon>
 
 package web
 
@@ -30,7 +30,7 @@ func TestMain(m *testing.M) {
 		err     error
 		result  int
 		opts    *cookiejar.Options
-		baseDir = time.Now().Format("/tmp/badnews_web_test_20060102_150405")
+		baseDir = time.Now().Format("/tmp/carebear_web_test_20060102_150405")
 	)
 
 	opts = &cookiejar.Options{}
