@@ -1,5 +1,5 @@
 {{ define "intro" }}
-{{/* Time-stamp: <2024-06-10 19:08:29 krylon> */}}
+{{/* Time-stamp: <2025-07-15 18:39:32 krylon> */}}
 <h1 id="page_title">{{ .Title }}</h1>
 <hr />
 
@@ -23,105 +23,5 @@
 
 {{ template "menu" . }}
 
-<p>
-  &nbsp;
-</p>
-<details id="intro_details">
-  <table id="intro" class="container-fluid">
-    <tbody>
-      <tr>
-        <td>
-          Message loop active:&nbsp;
-          <input
-          type="checkbox"
-          id="msg_check_switch"
-          name="doCheck"
-          value="doCheck"
-          onchange="toggleCheckMessages();"
-          checked />
-          <script>
-           if ({{ .Debug }}) {
-             $(document).ready(function() {
-               if (settings.messages.queryEnabled == null ||
-                   settings.messages.queryEnabled == undefined) {
-                 saveSetting("messages", "queryEnabled", true);
-               }
-             });
-           }
-          </script>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <h2 style="text-align:center;" onclick="toggleMsgDisplayVisible();">Messages</h2>
-
-          <div id="msg_display_div" class="container-fluid">
-            <table id="msg_display_tbl" class="horizontal spaced table">
-              <tr>
-                <th>Maximum number of messages to display:</th>
-                <td>
-                  <input
-                  type="number"
-                  id="max_msg_cnt"
-                  min="1"
-                  step="1"
-                  value="10"
-                  onchange="adjustMsgMaxCnt();"
-                  />
-                </td>
-              </tr>
-              <tr>
-                <th>Message Query Interval (ms):</th>
-                <td>
-                  <input
-                  type="number"
-                  id="msg_check_interval"
-                  min="500"
-                  step="500"
-                  value="2500"
-                  oninput="adjustMsgCheckInterval();"
-                  />
-                </td>
-              </tr>
-            </table>
-
-            <table
-              class="spaced table"
-              id="msg_tbl"
-              {{ if (eq (len .Messages) 0) }} style="display: none;"{{ end }}
-              >
-              <thead>
-                <tr>
-                  <th>Timestamp</th>
-                  <th>Level</th>
-                  <th>Message</th>
-                  <th>
-                    <input type="button" value="Delete All" onclick="msgRowDeleteAll();" />
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody id="msg_body">
-                {{ range .Messages }}
-                <tr id="msg_{{ .Checksum }}">
-                  <td>{{ .Timestamp }}</td>
-                  <td>{{ .Level }}</td>
-                  <td>{{ .Message }}</td>
-                  <td>
-                    <input
-                    type="button"
-                    value="Delete"
-                    onclick="msgRowDelete('msg_{{ .Checksum }}');" />
-                  </td>
-                </tr>
-                {{ end }}
-              </tbody>
-            </table>
-          </div>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</details>
 <hr />
 {{ end }}
