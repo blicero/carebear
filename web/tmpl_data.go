@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 06. 05. 2020 by Benjamin Walkenhorst
 // (c) 2020 Benjamin Walkenhorst
-// Time-stamp: <2025-07-15 18:37:58 krylon>
+// Time-stamp: <2025-07-15 19:24:22 krylon>
 //
 // This file contains data structures to be passed to HTML templates.
 
@@ -22,11 +22,17 @@ type tmplDataIndex struct { // nolint: unused,deadcode
 	tmplDataBase
 }
 
-type tmplDataNetwork struct { // nolint: unused,deadcode
+type tmplDataNetworkAll struct { // nolint: unused,deadcode
 	tmplDataBase
 	Networks []*model.Network
 	DevCnt   map[int64]int
 	Network  *model.Network
+}
+
+type tmplDataNetworkDetails struct {
+	tmplDataBase
+	Network *model.Network
+	Devices []*model.Device
 }
 
 // Local Variables:  //
