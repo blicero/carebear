@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-15 18:21:49 krylon>
+// Time-stamp: <2025-07-15 19:34:41 krylon>
 
 package database
 
@@ -1255,4 +1255,81 @@ EXEC_QUERY:
 	}
 
 	return nil, nil
+} // func (db *Database) DeviceGetByName(name string) (*model.Device, error)
+
+// DeviceGetByNetwork returns all Devices that belong to the given Network.
+func (db *Database) DeviceGetByNetwork(network *model.Network) ([]*model.Device, error) {
+	const qid query.ID = query.DeviceGetByNetwork
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(network.ID); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+	var devs = make([]*model.Device, 0)
+
+	for rows.Next() {
+		var (
+			stamp int64
+			addr  string
+			dev   = &model.Device{NetID: network.ID}
+		)
+
+		if err = rows.Scan(&dev.ID, &dev.Name, &addr, &dev.BigHead, &stamp); err != nil {
+			var ex = fmt.Errorf("Failed to scan row: %w", err)
+			db.log.Printf("[ERROR] %s\n", ex.Error())
+			return nil, ex
+		}
+
+		var alist = make([]string, 0, 2)
+
+		if err = json.Unmarshal([]byte(addr), &alist); err != nil {
+			var ex = fmt.Errorf("Cannot device addresses for Device %s: %w",
+				dev.Name,
+				err)
+			db.log.Printf("[ERROR] %s\n", ex.Error())
+			return nil, ex
+		}
+
+		dev.Addr = make([]net.Addr, len(alist))
+		for idx, astr := range alist {
+			var ip net.IP
+
+			if ip = net.ParseIP(astr); ip == nil {
+				var ex = fmt.Errorf("Cannot parse IP address of Device %s (%d): %q",
+					dev.Name,
+					dev.ID,
+					astr)
+				return nil, ex
+			}
+
+			var addr = &net.IPAddr{IP: ip}
+			dev.Addr[idx] = addr
+		}
+
+		devs = append(devs, dev)
+	}
+
+	return devs, nil
 } // func (db *Database) DeviceGetByName(name string) (*model.Device, error)
