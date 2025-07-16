@@ -1,0 +1,54 @@
+{{ define "device_all" }}
+{{/* Created on 10. 06. 2024 */}}
+{{/* Time-stamp: <2025-07-16 16:41:43 krylon> */}}
+<!DOCTYPE html>
+<html>
+    {{ template "head" . }}
+
+    <body>
+        {{ template "intro" . }}
+
+        {{/*
+        <div id="form_device" class="container-fluid">
+            {{ template "device_form" . }}
+        </div>
+        */}}
+
+        <hr />
+
+        <hr />
+
+        <div class="container-fluid" id="device-list">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Address</th>
+                        <th>BigHead</th>
+                        <th>Last Contact</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {{ range .Devices }}
+                    <tr>
+                        <td>{{ .ID }}</td>
+                        <td>
+                            <a href="/device/{{ .ID }}">
+                                {{ .Name }}
+                            </a>
+                        </td>
+                        <td>{{ .Addr }}</td>
+                        <td>{{ if .BigHead }}Yes{{ else }}No{{ end }}</td>
+                        <td>{{ fmt_time .LastSeen }}
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
+
+        {{ template "footer" . }}
+    </body>
+</html>
+{{ end }}

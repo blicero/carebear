@@ -1,0 +1,39 @@
+{{ define "device_form" }}
+{{/* Created on 16. 07. 2025 */}}
+{{/* Time-stamp: <2025-07-16 15:07:09 krylon> */}}
+<form>
+    <fieldset>
+        <legend>
+            {{ if .Device }}
+            Edit {{ .Device.Name }}
+            {{ else }}
+            Add Device
+            {{ end }}
+        </legend>
+
+        <div class="mb-3">
+            <label for="device-name" class="form-label">Name</label>
+            <input id="device-name"
+                   name="device-name"
+                   type="text"
+                   class="form-control"
+                   {{ if .Device }}value="{{ .Device.Name }}"{{ end }} />
+        </div>
+
+        <div class="mb-3">
+            <label for="device-addr" class="form-label">Address</label>
+            <input id="device-addr"
+                   name="device-addr"
+                   type="text"
+                   class="form-control"
+                   {{ if .Device }}value="{{ .Device.Addr }}"{{ end }} />
+        </div>
+
+        <input id="device-id"
+               name="device-id"
+               type="hidden"
+               value="{{ if .Device }}{{ .Device.ID }}{{ else }}0{{ end }}" />
+
+        <button type="submit" class="btn btn-primary">Save</button>
+</form>
+{{ end }}
