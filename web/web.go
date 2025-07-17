@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 07. 06. 2024 by Benjamin Walkenhorst
 // (c) 2024 Benjamin Walkenhorst
-// Time-stamp: <2025-07-15 19:30:51 krylon>
+// Time-stamp: <2025-07-17 10:58:27 krylon>
 
 package web
 
@@ -138,6 +138,7 @@ func Create(addr string) (*Server, error) {
 	srv.router.HandleFunc("/{page:(?:index|main|start)?$}", srv.handleMain)
 	srv.router.HandleFunc("/network/all", srv.handleNetworkAll)
 	srv.router.HandleFunc("/network/{id:(?:\\d+)$}", srv.handleNetworkDetails)
+	srv.router.HandleFunc("/device/all", srv.handleDeviceAll)
 
 	// Agent handlers
 	// srv.router.HandleFunc("/ws/register", srv.handleClientRegister)
@@ -252,7 +253,7 @@ func (srv *Server) handleNetworkAll(w http.ResponseWriter, r *http.Request) {
 		tmpl *template.Template
 		data = tmplDataNetworkAll{
 			tmplDataBase: tmplDataBase{
-				Title: "Networks",
+				Title: "All Networks",
 				Debug: common.Debug,
 				URL:   r.URL.String(),
 			},
@@ -310,7 +311,7 @@ func (srv *Server) handleNetworkDetails(w http.ResponseWriter, r *http.Request) 
 		netID int64
 		data  = tmplDataNetworkDetails{
 			tmplDataBase: tmplDataBase{
-				Title: "Networks",
+				//Title: "Networks",
 				Debug: common.Debug,
 				URL:   r.URL.String(),
 			},
@@ -349,6 +350,10 @@ func (srv *Server) handleNetworkDetails(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	data.Title = fmt.Sprintf("Details for Network %s (%d)",
+		data.Network.Addr,
+		data.Network.ID)
+
 	if tmpl = srv.tmpl.Lookup(tmplName); tmpl == nil {
 		msg = fmt.Sprintf("Could not find template %q", tmplName)
 		srv.log.Println("[CRITICAL] " + msg)
@@ -363,6 +368,55 @@ func (srv *Server) handleNetworkDetails(w http.ResponseWriter, r *http.Request) 
 			err.Error())
 	}
 } // func (srv *Server) handleNetworkDetails(w http.ResponseWriter, r *http.Request)
+
+func (srv *Server) handleDeviceAll(w http.ResponseWriter, r *http.Request) {
+	srv.log.Printf("[TRACE] Handle %s from %s\n",
+		r.URL,
+		r.RemoteAddr)
+
+	const (
+		tmplName = "device_all"
+	)
+
+	var (
+		err  error
+		msg  string
+		db   *database.Database
+		tmpl *template.Template
+		data = tmplDataDeviceAll{
+			tmplDataBase: tmplDataBase{
+				Title: "All Devices",
+				Debug: common.Debug,
+				URL:   r.URL.String(),
+			},
+		}
+	)
+
+	db = srv.pool.Get()
+	defer srv.pool.Put(db)
+
+	if data.Devices, err = db.DeviceGetAll(); err != nil {
+		msg = fmt.Sprintf("Failed to load all devices: %s",
+			err.Error())
+		srv.log.Printf("[ERROR] %s\n", msg)
+		srv.sendErrorMessage(w, msg)
+		return
+	}
+
+	if tmpl = srv.tmpl.Lookup(tmplName); tmpl == nil {
+		msg = fmt.Sprintf("Could not find template %q", tmplName)
+		srv.log.Println("[CRITICAL] " + msg)
+		srv.sendErrorMessage(w, msg)
+		return
+	}
+
+	w.Header().Set("Cache-Control", noCache)
+	if err = tmpl.Execute(w, &data); err != nil {
+		srv.log.Printf("[ERROR] Failed to render template %s: %s\n",
+			tmplName,
+			err.Error())
+	}
+} // func (srv *Server) handleDeviceAll(w http.ResponseWriter, r *http.Request)
 
 func (srv *Server) handleFavIco(w http.ResponseWriter, request *http.Request) {
 	srv.log.Printf("[TRACE] Handle request for %s\n",
