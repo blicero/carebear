@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2025-07-17 11:09:36 krylon>
+# Time-stamp: <2025-07-18 12:45:36 krylon>
 #+TAGS: internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
 #+TAGS: optimize(o) refactor(r) cleanup(c)
@@ -14,20 +14,20 @@
   :END:
 ** Clocktable
    #+BEGIN: clocktable :scope file :maxlevel 255 :emphasize t
-   #+CAPTION: Clock summary at [2025-07-17 Do 11:09]
+   #+CAPTION: Clock summary at [2025-07-18 Fr 12:45]
    | Headline                                    | Time    |         |      |      |
    |---------------------------------------------+---------+---------+------+------|
-   | *Total time*                                | *20:22* |         |      |      |
+   | *Total time*                                | *21:17* |         |      |      |
    |---------------------------------------------+---------+---------+------+------|
-   | *Care Bear [3/5]*                           | *20:22* |         |      |      |
-   | \_  /Components [3/5]/                      |         | /20:22/ |      |      |
+   | *Care Bear [3/5]*                           | *21:17* |         |      |      |
+   | \_  /Components [3/5]/                      |         | /21:17/ |      |      |
    | \_    Model [1/1]                           |         |         | 0:28 |      |
    | \_      Test IP enumeration                 |         |         |      | 0:28 |
    | \_    Database [0/1]                        |         |         | 3:53 |      |
    | \_    Scanner [2/2]                         |         |         | 9:55 |      |
    | \_      Make progress of scan more visible  |         |         |      | 1:28 |
    | \_      Make number of workers configurable |         |         |      | 0:24 |
-   | \_    Web UI [0/0]                          |         |         | 6:06 |      |
+   | \_    Web UI [0/0]                          |         |         | 7:01 |      |
    #+END:
 ** Components [3/5]
 *** Common [0/1]
@@ -90,6 +90,7 @@
     :VISIBILITY: children
     :END:
     :LOGBOOK:
+    CLOCK: [2025-07-18 Fr 09:45]--[2025-07-18 Fr 10:40] =>  0:55
     CLOCK: [2025-07-17 Do 10:51]--[2025-07-17 Do 11:09] =>  0:18
     CLOCK: [2025-07-16 Mi 15:55]--[2025-07-16 Mi 16:50] =>  0:55
     CLOCK: [2025-07-15 Di 18:05]--[2025-07-15 Di 19:38] =>  1:33
