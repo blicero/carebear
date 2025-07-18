@@ -1,6 +1,6 @@
 {{ define "network_details" }}
 {{/* Created on 10. 06. 2024 */}}
-{{/* Time-stamp: <2025-07-17 11:08:02 krylon> */}}
+{{/* Time-stamp: <2025-07-18 10:32:33 krylon> */}}
 <!DOCTYPE html>
 <html>
     {{ template "head" . }}
@@ -30,7 +30,11 @@
                     {{ range .Devices }}
                     <tr>
                         <td>{{ .ID }}</td>
-                        <td>{{ .Name }}</td>
+                        <td>
+                            <a href="/device/{{ .ID }}">
+                                {{ .Name }}
+                            </a>
+                        </td>
                         <td>{{ .Addr }}</td>
                         <td>{{ if .BigHead }}Yes{{ else }}No{{ end }}</td>
                         <td>{{ fmt_time .LastSeen }}
