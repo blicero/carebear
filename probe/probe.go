@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 21. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-21 17:45:16 krylon>
+// Time-stamp: <2025-07-22 15:34:33 krylon>
 
 // Package probe implements probing Devices to determine what OS they run.
 package probe
@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/blicero/carebear/common"
@@ -56,10 +57,10 @@ func New(userName, keyPath string) (*Probe, error) {
 
 func (p *Probe) initConfig(userName, keyPath string) error {
 	var (
-		err     error
-		keyRaw  []byte
-		signer  ssh.Signer
-		hostKey ssh.PublicKey
+		err    error
+		keyRaw []byte
+		signer ssh.Signer
+		// hostKey ssh.PublicKey
 	)
 
 	if keyRaw, err = os.ReadFile(keyPath); err != nil {
@@ -71,7 +72,14 @@ func (p *Probe) initConfig(userName, keyPath string) error {
 	} else if signer, err = ssh.ParsePrivateKey(keyRaw); err != nil {
 		var ex = fmt.Errorf("Failed to parse SSH key: %w",
 			err)
-		p.log.Printf("[ERROR] %s\n", ex.Error)
+		p.log.Printf("[ERROR] %s\n", ex.Error())
+		return ex
+	} else if signer == nil {
+		var ex = fmt.Errorf("ParsePrivateKey did not return an error, but signer is nil!\nKey File: %s\nKey: %s",
+			keyPath,
+			keyRaw)
+		p.log.Printf("[ERROR] %s\n",
+			ex.Error())
 		return ex
 	}
 
@@ -80,14 +88,15 @@ func (p *Probe) initConfig(userName, keyPath string) error {
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
 		},
-		HostKeyCallback: ssh.FixedHostKey(hostKey),
+		// HostKeyCallback: ssh.FixedHostKey(hostKey),
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
 	return nil
 } // func (p *Probe) initConfig(keyPath string) error
 
 // QueryOS attempts to find out what operating system the device runs.
-func (p *Probe) QueryOS(d *model.Device) (string, error) {
+func (p *Probe) QueryOS(d *model.Device, port int) (string, error) {
 	var (
 		err     error
 		client  *ssh.Client
@@ -95,7 +104,10 @@ func (p *Probe) QueryOS(d *model.Device) (string, error) {
 	)
 
 	for _, a := range d.Addr {
-		if client, err = ssh.Dial("tcp", a.String(), p.cfg); err != nil {
+		var addr = fmt.Sprintf("%s:%d",
+			a,
+			port)
+		if client, err = ssh.Dial("tcp", addr, p.cfg); err != nil {
 			p.log.Printf("[ERROR] Failed to connect to %s at %s: %s\n",
 				d.Name,
 				a,
@@ -158,4 +170,16 @@ func (p *Probe) QueryOS(d *model.Device) (string, error) {
 		return "", ex
 	}
 
+	var (
+		osname      string
+		releaseInfo = string(rawOutput)
+	)
+
+	for l := range strings.Lines(releaseInfo) {
+		if strings.HasPrefix(l, "NAME=") {
+			osname = strings.Trim(l[5:], "\"\n\t ")
+		}
+	}
+
+	return osname, nil
 } // func (p *Probe) QueryOS(d *model.Device) (string, error)
