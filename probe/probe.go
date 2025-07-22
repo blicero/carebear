@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 21. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-22 15:34:33 krylon>
+// Time-stamp: <2025-07-22 20:20:38 krylon>
 
 // Package probe implements probing Devices to determine what OS they run.
 package probe
@@ -31,12 +31,12 @@ const (
 type Probe struct {
 	log  *log.Logger
 	db   *database.Database
-	lock sync.RWMutex
+	lock sync.RWMutex // nolint: unused
 	cfg  *ssh.ClientConfig
 }
 
 // New creates a new Probe.
-func New(userName, keyPath string) (*Probe, error) {
+func New(userName string, keyPath ...string) (*Probe, error) {
 	var (
 		err error
 		p   = new(Probe)
@@ -48,50 +48,64 @@ func New(userName, keyPath string) (*Probe, error) {
 		p.log.Printf("[ERROR] Failed to open database: %s\n",
 			err.Error())
 		return nil, err
-	} else if err = p.initConfig(userName, keyPath); err != nil {
+	} else if err = p.initConfig(userName, keyPath...); err != nil {
 		return nil, err
 	}
 
 	return p, nil
 } // func New(keyPath string) (*Probe, error)
 
-func (p *Probe) initConfig(userName, keyPath string) error {
+func (p *Probe) initConfig(userName string, keyPath ...string) error {
 	var (
 		err    error
 		keyRaw []byte
 		signer ssh.Signer
+		keys   = make([]ssh.Signer, 0, len(keyPath))
 		// hostKey ssh.PublicKey
 	)
 
-	if keyRaw, err = os.ReadFile(keyPath); err != nil {
-		var ex = fmt.Errorf("Failed to read SSH key from %s: %w",
-			keyPath,
-			err)
-		p.log.Printf("[ERROR] %s\n", ex.Error())
-		return ex
-	} else if signer, err = ssh.ParsePrivateKey(keyRaw); err != nil {
-		var ex = fmt.Errorf("Failed to parse SSH key: %w",
-			err)
-		p.log.Printf("[ERROR] %s\n", ex.Error())
-		return ex
-	} else if signer == nil {
-		var ex = fmt.Errorf("ParsePrivateKey did not return an error, but signer is nil!\nKey File: %s\nKey: %s",
-			keyPath,
-			keyRaw)
-		p.log.Printf("[ERROR] %s\n",
-			ex.Error())
-		return ex
+	for _, path := range keyPath {
+		p.log.Printf("[DEBUG] Trying to import %s\n", path)
+		if keyRaw, err = os.ReadFile(path); err != nil {
+			var ex = fmt.Errorf("Failed to read SSH key from %s: %w",
+				keyPath,
+				err)
+			p.log.Printf("[ERROR] %s\n", ex.Error())
+			return ex
+		} else if signer, err = ssh.ParsePrivateKey(keyRaw); err != nil {
+			var ex = fmt.Errorf("Failed to parse SSH key: %w",
+				err)
+			p.log.Printf("[ERROR] %s\n", ex.Error())
+			return ex
+		} else if signer == nil {
+			var ex = fmt.Errorf("ParsePrivateKey did not return an error, but signer is nil!\nKey File: %s\nKey: %s",
+				keyPath,
+				keyRaw)
+			p.log.Printf("[ERROR] %s\n",
+				ex.Error())
+			return ex
+		}
+		keys = append(keys, signer)
 	}
 
 	p.cfg = &ssh.ClientConfig{
 		User: userName,
+		// Auth: make([]ssh.AuthMethod, 0, len(keys)),
 		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(signer),
+			ssh.PublicKeys(keys...),
 		},
 		// HostKeyCallback: ssh.FixedHostKey(hostKey),
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
+	// for _, key := range keys {
+	// 	p.log.Printf("[TRACE] Adding key to Authentication methods: %#v\n",
+	// 		key)
+	// 	p.cfg.Auth = append(p.cfg.Auth, ssh.PublicKeys(key))
+	// }
+
+	// slices.Reverse(p.cfg.Auth)
+	// p.log.Printf("[DEBUG] %#v\n", p.cfg.Auth)
 	return nil
 } // func (p *Probe) initConfig(keyPath string) error
 
@@ -113,9 +127,9 @@ func (p *Probe) QueryOS(d *model.Device, port int) (string, error) {
 				a,
 				err.Error())
 
+		} else {
+			break
 		}
-
-		break
 	}
 
 	if client == nil {
@@ -129,7 +143,7 @@ func (p *Probe) QueryOS(d *model.Device, port int) (string, error) {
 	if session, err = client.NewSession(); err != nil {
 		var ex = fmt.Errorf("Failed to create SSH session with %s: %w",
 			d.Name,
-			err.Error())
+			err)
 		p.log.Printf("[ERROR] %s\n", ex.Error())
 		return "", ex
 	}
@@ -156,7 +170,7 @@ func (p *Probe) QueryOS(d *model.Device, port int) (string, error) {
 	} else if session, err = client.NewSession(); err != nil {
 		var ex = fmt.Errorf("Failed to create SSH session on %s: %w",
 			d.Name,
-			err.Error())
+			err)
 		p.log.Printf("[ERROR] %s\n", ex.Error())
 	}
 
@@ -165,7 +179,7 @@ func (p *Probe) QueryOS(d *model.Device, port int) (string, error) {
 	if rawOutput, err = session.CombinedOutput(osReleaseCmd); err != nil {
 		var ex = fmt.Errorf("Failed to cat(1) /etc/os-release on %s: %w",
 			d.Name,
-			err.Error())
+			err)
 		p.log.Printf("[ERROR] %s\n", ex.Error())
 		return "", ex
 	}

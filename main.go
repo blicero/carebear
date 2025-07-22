@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-22 15:25:29 krylon>
+// Time-stamp: <2025-07-22 19:14:34 krylon>
 
 package main
 
@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/blicero/carebear/common"
@@ -30,7 +31,6 @@ func main() {
 		addr     string
 		mode     string
 		username string
-		keyfile  string
 		port     int
 		srv      *web.Server
 		p        *probe.Probe
@@ -47,11 +47,6 @@ func main() {
 		"user",
 		os.Getenv("USER"),
 		"The username for probing a remote host")
-	flag.StringVar(
-		&keyfile,
-		"key",
-		"",
-		"Private SSH key to use for probing")
 	flag.IntVar(
 		&port,
 		"port",
@@ -82,23 +77,34 @@ func main() {
 		fmt.Println("Scanner is not ready, yet.")
 		os.Exit(0)
 	case "probe":
-		const addrStr = "51.195.118.34"
 		var (
-			osname string
-			dev    = &model.Device{
+			osname   string
+			keyFiles []string
+			dev      = &model.Device{
 				ID:    42,
 				NetID: 23,
-				Name:  "blicero",
+				Name:  addr,
 				Addr: []net.Addr{
 					&net.IPAddr{
-						IP: net.ParseIP(addrStr),
+						IP: net.ParseIP(addr),
 					},
 				},
 				BigHead: true,
 			}
 		)
 
-		if p, err = probe.New(username, keyfile); err != nil {
+		if keyFiles, err = findKeyFiles(); err != nil {
+			fmt.Fprintf(
+				os.Stderr,
+				"Failed to find SSH keys: %s\n",
+				err.Error())
+			os.Exit(1)
+		}
+
+		fmt.Printf("Using the following keys for authentication:\n%s\n",
+			strings.Join(keyFiles, "\n"))
+
+		if p, err = probe.New(username, keyFiles...); err != nil {
 			fmt.Fprintf(
 				os.Stderr,
 				"Failed to create Probe: %s\n",
@@ -120,3 +126,37 @@ func main() {
 	}
 
 } // func main()
+
+func findKeyFiles() ([]string, error) {
+	var (
+		err   error
+		dh    *os.File
+		path  string
+		names []string
+		files = make([]string, 0, 8)
+	)
+
+	path = filepath.Join(
+		os.Getenv("HOME"),
+		".ssh")
+
+	if dh, err = os.Open(path); err != nil {
+		return nil, err
+	}
+
+	defer dh.Close()
+
+	if names, err = dh.Readdirnames(-1); err != nil {
+		return nil, err
+	}
+
+	for _, file := range names {
+		if strings.HasPrefix(file, "id_") && !strings.HasSuffix(file, ".pub") {
+			files = append(
+				files,
+				filepath.Join(path, file))
+		}
+	}
+
+	return files, nil
+} // func findKeyFiles() ([]string, error)
