@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2025-07-22 15:35:56 krylon>
+# Time-stamp: <2025-07-22 20:23:26 krylon>
 #+TAGS: internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
 #+TAGS: optimize(o) refactor(r) cleanup(c)
@@ -7,30 +7,30 @@
 #+TODO: MEDITATE(m) PLANNING(p) | SUSPENDED(s)
 #+PRIORITIES: A G D
 
-* Care Bear [3/7]
+* Care Bear [5/7]
   :PROPERTIES:
   :COOKIE_DATA: todo recursive
   :VISIBILITY: children
   :END:
 ** Clocktable
    #+BEGIN: clocktable :scope file :maxlevel 255 :emphasize t
-   #+CAPTION: Clock summary at [2025-07-22 Di 15:35]
+   #+CAPTION: Clock summary at [2025-07-22 Di 20:23]
    | Headline                                    | Time      |           |      |      |
    |---------------------------------------------+-----------+-----------+------+------|
-   | *Total time*                                | *1d 0:43* |           |      |      |
+   | *Total time*                                | *1d 3:44* |           |      |      |
    |---------------------------------------------+-----------+-----------+------+------|
-   | *Care Bear [3/7]*                           | *1d 0:43* |           |      |      |
-   | \_  /Components [3/7]/                      |           | /1d 0:43/ |      |      |
+   | *Care Bear [5/7]*                           | *1d 3:44* |           |      |      |
+   | \_  /Components [5/7]/                      |           | /1d 3:44/ |      |      |
    | \_    Model [1/1]                           |           |           | 0:28 |      |
    | \_      Test IP enumeration                 |           |           |      | 0:28 |
    | \_    Database [0/1]                        |           |           | 3:53 |      |
    | \_    Scanner [2/2]                         |           |           | 9:55 |      |
    | \_      Make progress of scan more visible  |           |           |      | 1:28 |
    | \_      Make number of workers configurable |           |           |      | 0:24 |
-   | \_    Probe [0/2]                           |           |           | 3:26 |      |
+   | \_    Probe [2/2]                           |           |           | 6:27 |      |
    | \_    Web UI [0/0]                          |           |           | 7:01 |      |
    #+END:
-** Components [3/7]
+** Components [5/7]
 *** Common [0/1]
 **** TODO [#G] Make default log level configurable
 *** Model [1/1]
@@ -85,18 +85,21 @@
      :LOGBOOK:
      CLOCK: [2025-07-12 Sa 18:10]--[2025-07-12 Sa 18:34] =>  0:24
      :END:
-*** Probe [0/2]
+*** Probe [2/2]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
     :VISIBILITY: children
     :END:
     :LOGBOOK:
+    CLOCK: [2025-07-22 Di 17:22]--[2025-07-22 Di 20:23] =>  3:01
     CLOCK: [2025-07-22 Di 14:23]--[2025-07-22 Di 15:35] =>  1:12
     CLOCK: [2025-07-21 Mo 15:40]--[2025-07-21 Mo 17:54] =>  2:14
     :END:
-**** TODO Connect via SSH
+**** DONE Connect via SSH
+     CLOSED: [2025-07-22 Di 18:12]
      If possible with public key authentication.
-**** TODO Query OS
+**** DONE Query OS
+     CLOSED: [2025-07-22 Di 18:12]
 *** Web UI [0/0]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
