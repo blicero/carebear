@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 07. 06. 2024 by Benjamin Walkenhorst
 // (c) 2024 Benjamin Walkenhorst
-// Time-stamp: <2025-07-18 10:29:54 krylon>
+// Time-stamp: <2025-07-21 15:36:25 krylon>
 
 package web
 
@@ -498,6 +498,10 @@ func (srv *Server) handleDeviceDetails(w http.ResponseWriter, r *http.Request) {
 			err.Error())
 	}
 } // func (srv *Server) handleDeviceDetails(w http.ResponseWriter, r *http.Request)
+
+//////////////////////////////////////////////////////////////////////////////
+/// Handle static assets /////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
 func (srv *Server) handleFavIco(w http.ResponseWriter, request *http.Request) {
 	srv.log.Printf("[TRACE] Handle request for %s\n",

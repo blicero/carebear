@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-12 19:11:10 krylon>
+// Time-stamp: <2025-07-21 15:37:39 krylon>
 
 package scanner
 
@@ -39,8 +39,8 @@ type scanProgress struct {
 	added   atomic.Uint64
 }
 
-// Scanner traverses IP networks looking for Devices.
-type Scanner struct {
+// NetworkScanner traverses IP networks looking for Devices.
+type NetworkScanner struct {
 	log        *log.Logger
 	lock       sync.RWMutex
 	CmdQ       chan command.Command
@@ -51,11 +51,11 @@ type Scanner struct {
 	timeout    time.Duration
 }
 
-// New creates a new Scanner.
-func New(wcnt int64) (*Scanner, error) {
+// NewNetworkScanner creates a new NetworkScanner.
+func NewNetworkScanner(wcnt int64) (*NetworkScanner, error) {
 	var (
 		err error
-		s   = &Scanner{
+		s   = &NetworkScanner{
 			CmdQ:      make(chan command.Command),
 			scanMap:   make(map[int64]*scanProgress),
 			workerCnt: wcnt,
@@ -75,23 +75,23 @@ func New(wcnt int64) (*Scanner, error) {
 } // func New() (*Scanner, error)
 
 // Active returns the value of the Scanner's active flag.
-func (s *Scanner) Active() bool {
+func (s *NetworkScanner) Active() bool {
 	return s.activeFlag.Load()
 } // func (s *Scanner) Active() bool
 
 // Start initiates the scan engine.
-func (s *Scanner) Start() {
+func (s *NetworkScanner) Start() {
 	s.activeFlag.Store(true)
 	go s.run()
 }
 
 // Stop tells the Scanner to stop.
-func (s *Scanner) Stop() {
+func (s *NetworkScanner) Stop() {
 	s.activeFlag.Store(false)
 } // func (s *Scanner) Stop()
 
 // ScanCnt returns the number of Networks currently being scanned.
-func (s *Scanner) ScanCnt() int {
+func (s *NetworkScanner) ScanCnt() int {
 	s.lock.RLock()
 	var cnt = len(s.scanMap)
 	s.lock.RUnlock()
@@ -105,7 +105,7 @@ func (s *Scanner) ScanCnt() int {
 // - whether or not the given Network is currently being scanned.
 // If the given Network is not currently being scanned, the first two
 // numbers will be 0, obviously.
-func (s *Scanner) ScanProgress(nid int64) (uint64, uint64, bool) {
+func (s *NetworkScanner) ScanProgress(nid int64) (uint64, uint64, bool) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
@@ -125,7 +125,7 @@ func (s *Scanner) ScanProgress(nid int64) (uint64, uint64, bool) {
 	return scanCnt, addCnt, true
 } // func (s *Scanner) ScanProgress(nid int64) (uint64, uint64, bool)
 
-func (s *Scanner) run() {
+func (s *NetworkScanner) run() {
 	var (
 		cmd  command.Command
 		tick = time.NewTicker(ckPeriod)
@@ -145,7 +145,7 @@ func (s *Scanner) run() {
 	}
 } // func (s *Scanner) run()
 
-func (s *Scanner) handleCommand(c command.Command) {
+func (s *NetworkScanner) handleCommand(c command.Command) {
 	var (
 		err      error
 		networks []*model.Network
@@ -168,7 +168,7 @@ func (s *Scanner) handleCommand(c command.Command) {
 	}
 } // func (s *Scanner) handleCommand(c command.Command)
 
-func (s *Scanner) scanStart(n *model.Network) {
+func (s *NetworkScanner) scanStart(n *model.Network) {
 	s.lock.Lock()
 	// defer s.lock.Unlock()
 	if _, ok := s.scanMap[n.ID]; ok {
@@ -220,7 +220,7 @@ func (s *Scanner) scanStart(n *model.Network) {
 	close(devQ)
 } // func (s *Scanner) scanStart(n *model.Network)
 
-func (s *Scanner) netScanWorker(nid, wid int64, addrQ <-chan net.IP, devQ chan<- *model.Device, wg *sync.WaitGroup) {
+func (s *NetworkScanner) netScanWorker(nid, wid int64, addrQ <-chan net.IP, devQ chan<- *model.Device, wg *sync.WaitGroup) {
 	// s.log.Printf("[TRACE] netScanWorker%03d coming up...\n", wid)
 	defer s.log.Printf("[TRACE] netScanWorker%03d quitting...\n", wid)
 	defer wg.Done()
@@ -256,7 +256,7 @@ func (s *Scanner) netScanWorker(nid, wid int64, addrQ <-chan net.IP, devQ chan<-
 	}
 } // func (s *Scanner) netScanWorker(id int, addrQ <-chan net.IP, wg *sync.WaitGroup)
 
-func (s *Scanner) netScanCollector(n *model.Network, devQ <-chan *model.Device) {
+func (s *NetworkScanner) netScanCollector(n *model.Network, devQ <-chan *model.Device) {
 	s.log.Printf("[TRACE] Collector for network %d (%s) starting up\n",
 		n.ID,
 		n.Addr)
@@ -299,7 +299,7 @@ func (s *Scanner) netScanCollector(n *model.Network, devQ <-chan *model.Device) 
 	}
 } // func (s *Scanner) netScanCollector(devQ <-chan *model.Device)
 
-func (s *Scanner) pingAddr(addr net.IP) bool {
+func (s *NetworkScanner) pingAddr(addr net.IP) bool {
 	var (
 		err  error
 		ping *probing.Pinger

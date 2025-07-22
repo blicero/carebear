@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-11 15:07:06 krylon>
+// Time-stamp: <2025-07-21 16:44:18 krylon>
 
 // Package model provides data types used throughout the application.
 package model
@@ -90,6 +90,7 @@ func (d *Device) AddrStr() string {
 	return buf.String()
 } // func (d *Device) AddrStr() string
 
+// For posterity, I leave this commented out without removing it:
 // http://play.golang.org/p/m8TNTtygK0
 // func inc(ip net.IP) {
 // 	for j := len(ip) - 1; j >= 0; j-- {
