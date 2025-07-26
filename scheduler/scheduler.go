@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 24. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-26 18:05:09 krylon>
+// Time-stamp: <2025-07-26 19:56:45 krylon>
 
 // Package scheduler provides the logic to schedule tasks and execute them.
 package scheduler
@@ -16,6 +16,7 @@ import (
 	"github.com/blicero/carebear/common"
 	"github.com/blicero/carebear/database"
 	"github.com/blicero/carebear/logdomain"
+	"github.com/blicero/carebear/scheduler/task"
 )
 
 const (
@@ -23,28 +24,29 @@ const (
 	checkInterval = time.Second * 15 // TODO: Adjust to higher value after testing/debugging
 )
 
-type TaskTag uint8
-
-const (
-	NetworkScan TaskTag = iota
-	DevicePing
-	DeviceProbeSysload
-)
+// Task defines describes a Task. Aren't you sorry, you asked?
+type Task struct {
+	Kind     task.Tag
+	ObjectID int64
+}
 
 // Scheduler wraps the state needed to schedule the scanning of networks, probing
 // of devices, possibly other tasks, too.
 type Scheduler struct {
 	log    *log.Logger
 	pool   *database.Pool
-	lock   sync.RWMutex
+	lock   sync.RWMutex // nolint: unused
 	active atomic.Bool
+	TaskQ  chan Task
 }
 
 // Create returns a fresh Scheduler.
 func Create() (*Scheduler, error) {
 	var (
 		err error
-		s   = new(Scheduler)
+		s   = &Scheduler{
+			TaskQ: make(chan Task),
+		}
 	)
 
 	if s.log, err = common.GetLogger(logdomain.Scheduler); err != nil {
@@ -66,6 +68,12 @@ func (s *Scheduler) Stop() {
 	s.active.Store(false)
 } // func (s *Scheduler) Stop()
 
+// Start starts the Scheduler's main loop.
+func (s *Scheduler) Start() {
+	s.active.Store(true)
+	go s.run()
+} // func (s *Scheduler) Start()
+
 func (s *Scheduler) run() {
 	var (
 		ticker = time.NewTicker(checkInterval)
@@ -74,9 +82,15 @@ func (s *Scheduler) run() {
 	defer ticker.Stop()
 
 	for s.IsActive() {
+		var t Task
 		select {
 		case <-ticker.C:
 			continue
+		case t = <-s.TaskQ:
+			switch t.Kind {
+			case task.NetworkScan:
+
+			}
 		}
 	}
 } // func (s *Scheduler) run()
