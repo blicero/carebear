@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 01. 02. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2025-07-24 17:30:39 krylon>
+// Time-stamp: <2025-07-26 19:48:28 krylon>
 
 //go:build ignore
 // +build ignore
@@ -61,9 +61,11 @@ var candidates = map[string][]string{
 		"logdomain",
 		"database/query",
 		"scanner/command",
+		"scheduler/task",
 	},
 	"test": {
 		"database",
+		"probe",
 		"web",
 	},
 	"vet": {
