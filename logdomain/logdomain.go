@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-21 15:47:48 krylon>
+// Time-stamp: <2025-07-24 17:30:57 krylon>
 
 package logdomain
 
@@ -17,6 +17,7 @@ const (
 	DBPool
 	Probe
 	Scanner
+	Scheduler
 	Web
 )
 
@@ -28,6 +29,7 @@ func AllDomains() []ID {
 		DBPool,
 		Probe,
 		Scanner,
+		Scheduler,
 		Web,
 	}
 } // func AllDomains() []ID

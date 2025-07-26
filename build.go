@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 01. 02. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2025-07-14 16:29:16 krylon>
+// Time-stamp: <2025-07-24 17:30:39 krylon>
 
 //go:build ignore
 // +build ignore
@@ -72,8 +72,10 @@ var candidates = map[string][]string{
 		"database",
 		"database/query",
 		"model",
+		"probe",
 		"scanner",
 		"scanner/command",
+		"scheduler",
 		"web",
 	},
 	"lint": {
@@ -82,8 +84,10 @@ var candidates = map[string][]string{
 		"database",
 		"database/query",
 		"model",
+		"probe",
 		"scanner",
 		"scanner/command",
+		"scheduler",
 		"web",
 	},
 }
