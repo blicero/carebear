@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 21. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-22 20:20:38 krylon>
+// Time-stamp: <2025-07-23 20:04:52 krylon>
 
 // Package probe implements probing Devices to determine what OS they run.
 package probe
@@ -88,6 +88,12 @@ func (p *Probe) initConfig(userName string, keyPath ...string) error {
 		keys = append(keys, signer)
 	}
 
+	// XXX The documentation for the ssh package says very explicitly to NOT use
+	//     InsecureIgnoreHostKey in production code, which makes sense for obvious reasons.
+	//     But I intend to only run this application on my local network, where I own and
+	//     administer all the devices.
+	//     But if anyone ever intends to use this code (or parts of it) for any other purpose,
+	//     please, PLEASE rectify this!!! You have been warned.
 	p.cfg = &ssh.ClientConfig{
 		User: userName,
 		// Auth: make([]ssh.AuthMethod, 0, len(keys)),
@@ -98,23 +104,13 @@ func (p *Probe) initConfig(userName string, keyPath ...string) error {
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
-	// for _, key := range keys {
-	// 	p.log.Printf("[TRACE] Adding key to Authentication methods: %#v\n",
-	// 		key)
-	// 	p.cfg.Auth = append(p.cfg.Auth, ssh.PublicKeys(key))
-	// }
-
-	// slices.Reverse(p.cfg.Auth)
-	// p.log.Printf("[DEBUG] %#v\n", p.cfg.Auth)
 	return nil
 } // func (p *Probe) initConfig(keyPath string) error
 
-// QueryOS attempts to find out what operating system the device runs.
-func (p *Probe) QueryOS(d *model.Device, port int) (string, error) {
+func (p *Probe) connect(d *model.Device, port int) (*ssh.Client, error) {
 	var (
-		err     error
-		client  *ssh.Client
-		session *ssh.Session
+		err    error
+		client *ssh.Client
 	)
 
 	for _, a := range d.Addr {
@@ -126,13 +122,25 @@ func (p *Probe) QueryOS(d *model.Device, port int) (string, error) {
 				d.Name,
 				a,
 				err.Error())
-
 		} else {
-			break
+			return client, nil
 		}
 	}
 
-	if client == nil {
+	return nil, err
+} // func (p *Probe) connect(d *model.Device, port int) (*ssh.Client, error)
+
+// QueryOS attempts to find out what operating system the device runs.
+func (p *Probe) QueryOS(d *model.Device, port int) (string, error) {
+	var (
+		err     error
+		client  *ssh.Client
+		session *ssh.Session
+	)
+
+	if client, err = p.connect(d, port); err != nil {
+		return "", err
+	} else if client == nil {
 		p.log.Printf("[ERROR] Could not connect to %s on any address.\n",
 			d.Name)
 		return "", err
@@ -165,6 +173,11 @@ func (p *Probe) QueryOS(d *model.Device, port int) (string, error) {
 
 	var kernel = string(rawOutput)
 
+	// If the kernel isn't Linux, it almost certainly is some kind of BSD, in which
+	// case we have the information we want.
+	//
+	// If it is, we try to read /etc/os-release to determine what distro we
+	// are dealing with.
 	if kernel != "Linux" {
 		return kernel, nil
 	} else if session, err = client.NewSession(); err != nil {
