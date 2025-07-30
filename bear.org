@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2025-07-26 18:10:16 krylon>
+# Time-stamp: <2025-07-30 19:21:06 krylon>
 #+TAGS: internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
 #+TAGS: optimize(o) refactor(r) cleanup(c)
@@ -47,7 +47,7 @@
      :LOGBOOK:
      CLOCK: [2025-07-11 Fr 14:50]--[2025-07-11 Fr 15:18] =>  0:28
      :END:
-*** Database [0/1]
+*** Database [1/2]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
     :VISIBILITY: children
@@ -59,13 +59,21 @@
     CLOCK: [2025-07-05 Sa 14:48]--[2025-07-05 Sa 15:44] =>  0:56
     CLOCK: [2025-07-04 Fr 14:54]--[2025-07-04 Fr 15:15] =>  0:21
     :END:
+**** DONE Extend schema
+     CLOSED: [2025-07-30 Mi 19:19]
+     :LOGBOOK:
+     CLOCK: [2025-07-30 Mi 18:31]--[2025-07-30 Mi 19:19] =>  0:48
+     :END:
+     Right now ([2025-07-30 Mi]), the database only stores networks and
+     devices, I obviously want to store more than that. Let's get to it.
 **** TODO More verbose logging
-*** Scanner [2/2]
+*** Scanner [3/3]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
     :VISIBILITY: children
     :END:
     :LOGBOOK:
+    CLOCK: [2025-07-30 Mi 17:37]--[2025-07-30 Mi 17:37] =>  0:00
     CLOCK: [2025-07-12 Sa 17:13]--[2025-07-12 Sa 18:10] =>  0:57
     CLOCK: [2025-07-11 Fr 15:19]--[2025-07-11 Fr 17:21] =>  2:02
     CLOCK: [2025-07-10 Do 15:20]--[2025-07-10 Do 16:27] =>  1:07
@@ -76,6 +84,12 @@
     :END:
     I should look into https://github.com/korylprince/ipnetgen to enumerate or
     iterate over all addresses in a network.
+**** DONE Add a way to scan a specific network
+     CLOSED: [2025-07-30 Mi 18:30]
+     :LOGBOOK:
+     CLOCK: [2025-07-30 Mi 17:37]--[2025-07-30 Mi 18:30] =>  0:53
+     :END:
+     I think I might need to rewrite the public interface of the Scanner.
 **** DONE Make progress of scan more visible
      CLOSED: [2025-07-12 Sa 20:02]
      :LOGBOOK:
@@ -110,10 +124,13 @@
     :VISIBILITY: children
     :END:
     :LOGBOOK:
+    CLOCK: [2025-07-30 Mi 17:36]--[2025-07-30 Mi 17:37] =>  0:01
     CLOCK: [2025-07-26 Sa 16:41]--[2025-07-26 Sa 18:10] =>  1:29
     CLOCK: [2025-07-26 Sa 16:21]--[2025-07-26 Sa 16:22] =>  0:01
     CLOCK: [2025-07-24 Do 17:29]--[2025-07-25 Fr 23:23] => 29:54
     :END:
+    I have been doing this wrong. The scheduler doesn't receive commands, it
+    emits commands, if anything.
 *** Web UI [0/0]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
