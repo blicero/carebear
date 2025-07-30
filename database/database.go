@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-15 19:34:41 krylon>
+// Time-stamp: <2025-07-30 19:04:51 krylon>
 
 package database
 
@@ -1333,3 +1333,108 @@ EXEC_QUERY:
 
 	return devs, nil
 } // func (db *Database) DeviceGetByName(name string) (*model.Device, error)
+
+// UptimeAdd adds an uptime/sysload measurement to the Database.
+func (db *Database) UptimeAdd(u *model.Uptime) error {
+	const qid query.ID = query.UptimeAdd
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Failed to prepare query %s: %s\n",
+			qid,
+			err.Error())
+		panic(err)
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(u.DevID, u.Timestamp.Unix(), u.Load[0], u.Load[1], u.Load[2]); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		} else {
+			err = fmt.Errorf("Cannot add Uptime for Device %d: %w",
+				u.DevID,
+				err)
+			db.log.Printf("[ERROR] %s\n", err.Error())
+			return err
+		}
+	} else {
+		var id int64
+
+		defer rows.Close()
+
+		if !rows.Next() {
+			// CANTHAPPEN
+			db.log.Printf("[ERROR] Query %s did not return a value\n",
+				qid)
+			return fmt.Errorf("Query %s did not return a value", qid)
+		} else if err = rows.Scan(&id); err != nil {
+			var ex = fmt.Errorf("Failed to get ID for newly added Uptime: %w",
+				err)
+			db.log.Printf("[ERROR] %s\n", ex.Error())
+			return ex
+		}
+
+		u.ID = id
+		return nil
+	}
+} // func (db *Database) UptimeAdd(u *model.Uptime) error
+
+// UptimeGetByDevice returns the <cnt> most recent uptime value for the given device.
+// Pass cnt = -1 to get all.
+func (db *Database) UptimeGetByDevice(d *model.Device, cnt int) ([]*model.Uptime, error) {
+	const qid query.ID = query.UptimeGetByDevice
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(d.ID, cnt); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+	var data = make([]*model.Uptime, 0, 16)
+
+	for rows.Next() {
+		var (
+			stamp int64
+			up    = &model.Uptime{DevID: d.ID}
+		)
+
+		if err = rows.Scan(&up.ID, &stamp, &up.Load[0], &up.Load[1], &up.Load[2]); err != nil {
+			var ex = fmt.Errorf("Failed to scan row: %w", err)
+			db.log.Printf("[ERROR] %s\n", ex.Error())
+			return nil, ex
+		}
+
+		up.Timestamp = time.Unix(stamp, 0)
+		data = append(data, up)
+	}
+
+	return data, nil
+} // func (db *Database) UptimeGetByDevice(d *model.Device) ([]*model.Uptime, error)

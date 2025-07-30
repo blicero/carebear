@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 04. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-15 19:13:16 krylon>
+// Time-stamp: <2025-07-30 18:45:41 krylon>
 
 package database
 
@@ -91,5 +91,46 @@ SELECT
     last_seen
 FROM device
 WHERE net_id = ?
+`,
+	query.UptimeAdd: `
+INSERT INTO uptime (dev_id, timestamp, uptime, load1, load5, load15)
+            VALUES (     ?,         ?,      ?,     ?,     ?,      ?)
+RETURNING id
+`,
+	query.UptimeGetByID: `
+SELECT
+    dev_id,
+    timestamp,
+    uptime,
+    load1,
+    load5,
+    load15
+FROM uptime
+WHERE id = ?
+`,
+	query.UptimeGetByDevice: `
+SELECT
+    id,
+    timestamp,
+    load1,
+    load5,
+    load15
+FROM uptime
+WHERE dev_id = ?
+ORDER BY timestamp DESC
+LIMIT ?
+`,
+	query.UptimeGetByPeriod: `
+SELECT
+    id,
+    dev_id,
+    timestamp,
+    uptime,
+    load1,
+    load5,
+    load15
+FROM uptime
+WHERE timestamp BETWEEN ? AND ?
+ORDER BY timestamp DESC
 `,
 }
