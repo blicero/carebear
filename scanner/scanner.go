@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-21 15:37:39 krylon>
+// Time-stamp: <2025-07-30 18:14:10 krylon>
 
 package scanner
 
@@ -151,7 +151,7 @@ func (s *NetworkScanner) handleCommand(c command.Command) {
 		networks []*model.Network
 	)
 
-	switch c {
+	switch c.ID {
 	case command.ScanStart:
 		s.log.Println("[INFO] Starting scan of Networks.")
 		if networks, err = s.db.NetworkGetAll(); err != nil {
@@ -165,6 +165,25 @@ func (s *NetworkScanner) handleCommand(c command.Command) {
 				go s.scanStart(n)
 			}
 		}
+	case command.ScanOne:
+		var (
+			nw *model.Network
+			id = c.Target
+		)
+
+		if nw, err = s.db.NetworkGetByID(id); err != nil {
+			s.log.Printf("[ERROR] Failed to get Network %d from database: %s\n",
+				id,
+				err.Error())
+		} else if nw == nil {
+			s.log.Printf("[INFO] Network %d was not found in database.\n",
+				id)
+		} else if !netIsDue(nw) {
+			s.log.Printf("[INFO] Network %s is not due for a scan, but we were told to.\n",
+				nw.Addr)
+		}
+
+		go s.scanStart(nw)
 	}
 } // func (s *Scanner) handleCommand(c command.Command)
 
