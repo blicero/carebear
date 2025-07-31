@@ -2,11 +2,11 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-30 18:07:37 krylon>
+// Time-stamp: <2025-07-31 17:55:22 krylon>
 
 package command
 
-//go:generate stringer -type=Command
+//go:generate stringer -type=ID
 
 // ID identifies commands sent to the Scanner.
 type ID uint8
