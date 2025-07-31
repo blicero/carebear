@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-30 18:14:10 krylon>
+// Time-stamp: <2025-07-31 19:04:36 krylon>
 
 package scanner
 
@@ -26,8 +26,6 @@ import (
 //
 //	Better yet, make it configurable!
 const (
-	ckPeriod       = time.Second * 5
-	netScanPeriod  = time.Minute
 	pingCount      = 4
 	pingInterval   = time.Millisecond * 250
 	defaultTimeout = time.Second * 5
