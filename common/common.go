@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 07. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2025-07-14 14:33:56 krylon>
+// Time-stamp: <2025-07-31 18:01:45 krylon>
 
 // Package common contains definitions used throughout the application
 package common
@@ -96,6 +96,8 @@ var LogPath = filepath.Join(BaseDir, fmt.Sprintf("%s.log", strings.ToLower(AppNa
 // DbPath is the filename of the database.
 var DbPath = filepath.Join(BaseDir, fmt.Sprintf("%s.db", strings.ToLower(AppName)))
 
+var CfgPath = filepath.Join(BaseDir, fmt.Sprintf("%s.toml", strings.ToLower(AppName)))
+
 // InitApp performs some basic preparations for the application to run.
 // Currently, this means creating the BaseDir folder.
 func InitApp() error {
@@ -107,6 +109,7 @@ func InitApp() error {
 
 	LogPath = filepath.Join(BaseDir, fmt.Sprintf("%s.log", strings.ToLower(AppName)))
 	DbPath = filepath.Join(BaseDir, fmt.Sprintf("%s.db", strings.ToLower(AppName)))
+	CfgPath = filepath.Join(BaseDir, fmt.Sprintf("%s.toml", strings.ToLower(AppName)))
 
 	return nil
 } // func InitApp() error
@@ -126,6 +129,7 @@ func SetBaseDir(path string) error {
 	BaseDir = path
 	LogPath = filepath.Join(BaseDir, fmt.Sprintf("%s.log", strings.ToLower(AppName)))
 	DbPath = filepath.Join(BaseDir, fmt.Sprintf("%s.db", strings.ToLower(AppName)))
+	CfgPath = filepath.Join(BaseDir, fmt.Sprintf("%s.toml", strings.ToLower(AppName)))
 
 	var (
 		err error

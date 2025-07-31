@@ -15,6 +15,7 @@ require (
 
 require (
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/pelletier/go-toml v1.9.5 // indirect
 	golang.org/x/crypto v0.40.0 // indirect
 	golang.org/x/net v0.41.0 // indirect
 	golang.org/x/sync v0.13.0 // indirect
