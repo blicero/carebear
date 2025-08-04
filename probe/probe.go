@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 21. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-23 20:04:52 krylon>
+// Time-stamp: <2025-08-02 15:41:30 krylon>
 
 // Package probe implements probing Devices to determine what OS they run.
 package probe
@@ -29,10 +29,11 @@ const (
 
 // Probe attempts to query Devices for the OS they are running.
 type Probe struct {
-	log  *log.Logger
-	db   *database.Database
-	lock sync.RWMutex // nolint: unused
-	cfg  *ssh.ClientConfig
+	log     *log.Logger
+	db      *database.Database
+	lock    sync.RWMutex // nolint: unused
+	cfg     *ssh.ClientConfig
+	clients map[int64]*ssh.Client
 }
 
 // New creates a new Probe.
@@ -52,6 +53,8 @@ func New(userName string, keyPath ...string) (*Probe, error) {
 		return nil, err
 	}
 
+	p.clients = make(map[int64]*ssh.Client)
+
 	return p, nil
 } // func New(keyPath string) (*Probe, error)
 
@@ -61,7 +64,6 @@ func (p *Probe) initConfig(userName string, keyPath ...string) error {
 		keyRaw []byte
 		signer ssh.Signer
 		keys   = make([]ssh.Signer, 0, len(keyPath))
-		// hostKey ssh.PublicKey
 	)
 
 	for _, path := range keyPath {
@@ -100,7 +102,6 @@ func (p *Probe) initConfig(userName string, keyPath ...string) error {
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(keys...),
 		},
-		// HostKeyCallback: ssh.FixedHostKey(hostKey),
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
@@ -130,6 +131,26 @@ func (p *Probe) connect(d *model.Device, port int) (*ssh.Client, error) {
 	return nil, err
 } // func (p *Probe) connect(d *model.Device, port int) (*ssh.Client, error)
 
+func (p *Probe) getClient(d *model.Device, port int) (*ssh.Client, error) {
+	var (
+		err error
+		ok  bool
+		c   *ssh.Client
+	)
+
+	p.lock.Lock()
+	defer p.lock.Unlock()
+
+	if c, ok = p.clients[d.ID]; ok {
+		return c, nil
+	} else if c, err = p.connect(d, port); err != nil {
+		return nil, err
+	}
+
+	p.clients[d.ID] = c
+	return c, nil
+} // func (p *Probe) getClient(d *model.Device, port int) (*ssh.Client, error)
+
 // QueryOS attempts to find out what operating system the device runs.
 func (p *Probe) QueryOS(d *model.Device, port int) (string, error) {
 	var (
@@ -138,7 +159,7 @@ func (p *Probe) QueryOS(d *model.Device, port int) (string, error) {
 		session *ssh.Session
 	)
 
-	if client, err = p.connect(d, port); err != nil {
+	if client, err = p.getClient(d, port); err != nil {
 		return "", err
 	} else if client == nil {
 		p.log.Printf("[ERROR] Could not connect to %s on any address.\n",
@@ -146,7 +167,7 @@ func (p *Probe) QueryOS(d *model.Device, port int) (string, error) {
 		return "", err
 	}
 
-	defer client.Close()
+	// defer client.Close()
 
 	if session, err = client.NewSession(); err != nil {
 		var ex = fmt.Errorf("Failed to create SSH session with %s: %w",
@@ -210,3 +231,5 @@ func (p *Probe) QueryOS(d *model.Device, port int) (string, error) {
 
 	return osname, nil
 } // func (p *Probe) QueryOS(d *model.Device) (string, error)
+
+//func (p *Probe)

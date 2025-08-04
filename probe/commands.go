@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-26 16:40:02 krylon>
+// Time-stamp: <2025-08-02 15:41:33 krylon>
 
 package probe
 
@@ -25,13 +25,13 @@ func (p *Probe) executeCommand(d *model.Device, port int, cmd string) ([]string,
 		session *ssh.Session
 	)
 
-	if client, err = p.connect(d, port); err != nil {
+	if client, err = p.getClient(d, port); err != nil {
 		p.log.Printf("Failed to connect to %s: %s\n",
 			d.Name,
 			err.Error())
 	}
 
-	defer client.Close()
+	// defer client.Close()
 
 	if session, err = client.NewSession(); err != nil {
 		var ex = fmt.Errorf("Failed to create SSH session for %s: %w",
