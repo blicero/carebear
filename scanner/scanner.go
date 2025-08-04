@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-31 19:04:36 krylon>
+// Time-stamp: <2025-08-01 15:27:35 krylon>
 
 package scanner
 
@@ -19,6 +19,7 @@ import (
 	"github.com/blicero/carebear/logdomain"
 	"github.com/blicero/carebear/model"
 	"github.com/blicero/carebear/scanner/command"
+	"github.com/blicero/carebear/settings"
 	probing "github.com/prometheus-community/pro-bing"
 )
 
@@ -29,6 +30,11 @@ const (
 	pingCount      = 4
 	pingInterval   = time.Millisecond * 250
 	defaultTimeout = time.Second * 5
+	ckPeriod       = time.Second * 5
+)
+
+var (
+	netScanPeriod time.Duration = time.Minute * 10
 )
 
 type scanProgress struct {
@@ -50,16 +56,20 @@ type NetworkScanner struct {
 }
 
 // NewNetworkScanner creates a new NetworkScanner.
-func NewNetworkScanner(wcnt int64) (*NetworkScanner, error) {
+func NewNetworkScanner() (*NetworkScanner, error) {
 	var (
 		err error
 		s   = &NetworkScanner{
-			CmdQ:      make(chan command.Command),
-			scanMap:   make(map[int64]*scanProgress),
-			workerCnt: wcnt,
-			timeout:   defaultTimeout,
+			CmdQ:    make(chan command.Command),
+			scanMap: make(map[int64]*scanProgress),
+			timeout: defaultTimeout,
 		}
 	)
+
+	if settings.Settings != nil {
+		s.workerCnt = settings.Settings.ScanWorkerCount
+		netScanPeriod = settings.Settings.ScanIntervalNet
+	}
 
 	if s.log, err = common.GetLogger(logdomain.Scanner); err != nil {
 		var ex = fmt.Errorf("Cannot create Logger for Scanner: %w", err)
