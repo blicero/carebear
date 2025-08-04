@@ -128,7 +128,7 @@ func (p *Probe) connect(d *model.Device, port int) (*ssh.Client, error) {
 		}
 	}
 
-	return nil, err
+	return nil, fmt.Errorf("Failed to connect to %s", d.Name)
 } // func (p *Probe) connect(d *model.Device, port int) (*ssh.Client, error)
 
 func (p *Probe) getClient(d *model.Device, port int) (*ssh.Client, error) {
@@ -145,6 +145,11 @@ func (p *Probe) getClient(d *model.Device, port int) (*ssh.Client, error) {
 		return c, nil
 	} else if c, err = p.connect(d, port); err != nil {
 		return nil, err
+	} else if c == nil {
+		var ex = fmt.Errorf("probe.connect did not return an error, but connection to %s is nil",
+			d.Name)
+		p.log.Printf("[ERROR] %s\n", ex.Error())
+		return nil, ex
 	}
 
 	p.clients[d.ID] = c

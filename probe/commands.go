@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-02 15:41:33 krylon>
+// Time-stamp: <2025-08-04 22:59:06 krylon>
 
 package probe
 
@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/blicero/carebear/model"
 	"golang.org/x/crypto/ssh"
@@ -29,6 +30,10 @@ func (p *Probe) executeCommand(d *model.Device, port int, cmd string) ([]string,
 		p.log.Printf("Failed to connect to %s: %s\n",
 			d.Name,
 			err.Error())
+	} else if client == nil {
+		var ex = fmt.Errorf("SSH Client connection for device %s is nil", d.Name)
+		p.log.Printf("[ERROR] %s\n", ex.Error())
+		return nil, ex
 	}
 
 	// defer client.Close()
@@ -77,16 +82,19 @@ func (p *Probe) QueryUpdatesSuse(d *model.Device, port int) ([]string, error) {
 // 6:02PM  up 56 days,  5:16, 4 users, load averages: 0.00, 0.01, 0.00
 
 var uptimePat = regexp.MustCompile(
-	`(?msi:durchschnittslast|load averages?):\s+(\d+[,.]\d+),\s+(\d+[,.]\d+),\s+(\d+[,.]\d+)\s*$`)
+	`:\s+(\d+[,.]\d+),?\s+(\d+[,.]\d+),?\s+(\d+[,.]\d+)$`)
 
-// QueryLoadAvg attempts to extract the system load average from the given Device.
-func (p *Probe) QueryLoadAvg(d *model.Device, port int) ([3]float64, error) {
+// QueryUptime attempts to extract the system load average from the given Device.
+func (p *Probe) QueryUptime(d *model.Device, port int) (*model.Uptime, error) {
 	const cmd = "/usr/bin/uptime"
 	var (
 		err   error
 		res   []string
-		load  [3]float64
 		match []string
+		up    = &model.Uptime{
+			DevID:     d.ID,
+			Timestamp: time.Now(),
+		}
 	)
 
 	if res, err = p.executeCommand(d, port, cmd); err != nil {
@@ -94,13 +102,13 @@ func (p *Probe) QueryLoadAvg(d *model.Device, port int) ([3]float64, error) {
 			d.Name,
 			err)
 		p.log.Printf("[ERROR] %s\n", ex.Error())
-		return load, ex
+		return nil, ex
 	} else if match = uptimePat.FindStringSubmatch(res[0]); match == nil {
 		var ex = fmt.Errorf("Cannot parse the output of uptime(1) from %s: %q",
 			d.Name,
 			res[0])
 		p.log.Printf("[ERROR] %s\n", ex.Error())
-		return load, ex
+		return nil, ex
 	} else if len(match) > 0 {
 		for idx, val := range match[1:] {
 			var (
@@ -113,14 +121,14 @@ func (p *Probe) QueryLoadAvg(d *model.Device, port int) ([3]float64, error) {
 					s,
 					err)
 				p.log.Printf("[ERROR] %s\n", ex.Error())
-				return load, ex
+				return nil, ex
 			}
 
-			load[idx] = f
+			up.Load[idx] = f
 		}
 	}
 
 	// ...
 
-	return load, nil
+	return up, nil
 } // func (p *Probe) QueryLoadAvg(d *model.Device, port int) ([3]float64, error)
