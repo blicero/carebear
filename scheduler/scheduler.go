@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 24. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-30 18:25:12 krylon>
+// Time-stamp: <2025-08-02 16:30:05 krylon>
 
 // Package scheduler provides the logic to schedule tasks and execute them.
 package scheduler
@@ -18,10 +18,12 @@ import (
 	"github.com/blicero/carebear/common"
 	"github.com/blicero/carebear/database"
 	"github.com/blicero/carebear/logdomain"
+	"github.com/blicero/carebear/model"
 	"github.com/blicero/carebear/probe"
 	"github.com/blicero/carebear/scanner"
 	"github.com/blicero/carebear/scanner/command"
 	"github.com/blicero/carebear/scheduler/task"
+	"github.com/blicero/carebear/settings"
 )
 
 const (
@@ -93,30 +95,91 @@ func (s *Scheduler) Start() {
 
 func (s *Scheduler) run() {
 	var (
-		ticker = time.NewTicker(checkInterval)
+		tickScanNet   = time.NewTicker(settings.Settings.ScanIntervalNet)
+		tickScanDev   = time.NewTicker(settings.Settings.ScanIntervalDev)
+		tickCheckLive = time.NewTicker(checkInterval)
 	)
 
-	defer ticker.Stop()
+	defer tickScanNet.Stop()
+	defer tickScanDev.Stop()
+	defer tickCheckLive.Stop()
 
 	for s.IsActive() {
-		var t Task
 		select {
-		case <-ticker.C:
+		case <-tickScanNet.C:
+			s.log.Println("[DEBUG] Initiate network scan.")
+			s.sc.CmdQ <- command.Command{ID: command.ScanStart}
+		case <-tickScanDev.C:
+			s.log.Println("[INFO] IMPLEMENTME - Scan Devices")
+		case <-tickCheckLive.C:
 			continue
-		case t = <-s.TaskQ:
-			switch t.Kind {
-			case task.NetworkScan:
-				var cmd command.Command
-
-				if t.ObjectID == 0 {
-					cmd.ID = command.ScanStart
-				} else {
-					cmd.ID = command.ScanOne
-					cmd.Target = t.ObjectID
-				}
-
-				s.sc.CmdQ <- cmd
-			}
 		}
 	}
 } // func (s *Scheduler) run()
+
+func (s *Scheduler) scanDevices() {
+	var (
+		err  error
+		db   *database.Database
+		devs []*model.Device
+	)
+
+	db = s.pool.Get()
+	defer s.pool.Put(db)
+
+	if err = db.Begin(); err != nil {
+		s.log.Printf("[ERROR] Cannot start database transaction: %s\n",
+			err.Error())
+	} else if devs, err = db.DeviceGetAll(); err != nil {
+		s.log.Printf("[ERROR] Failed to load all Devices: %s\n",
+			err.Error())
+		return
+	}
+
+	for _, d := range devs {
+		if !d.BigHead {
+			continue
+		} else if d.OS == "" {
+			var osname string
+			if osname, err = s.p.QueryOS(d, 22); err != nil {
+				s.log.Printf("[ERROR] Failed to query %s for its OS: %s\n",
+					d.Name, err.Error())
+			} else if err = db.DeviceUpdateOS(d, osname); err != nil {
+				s.log.Printf("[ERROR] Failed to set OS of %s to %s: %s\n",
+					d.Name,
+					osname,
+					err.Error())
+			}
+		}
+	}
+} // func (s *Scheduler) scanDevices()
+
+// func (s *Scheduler) run() {
+// 	var (
+// 		ticker = time.NewTicker(checkInterval)
+// 	)
+
+// 	defer ticker.Stop()
+
+// 	for s.IsActive() {
+// 		var t Task
+// 		select {
+// 		case <-ticker.C:
+// 			continue
+// 		case t = <-s.TaskQ:
+// 			switch t.Kind {
+// 			case task.NetworkScan:
+// 				var cmd command.Command
+
+// 				if t.ObjectID == 0 {
+// 					cmd.ID = command.ScanStart
+// 				} else {
+// 					cmd.ID = command.ScanOne
+// 					cmd.Target = t.ObjectID
+// 				}
+
+// 				s.sc.CmdQ <- cmd
+// 			}
+// 		}
+// 	}
+// } // func (s *Scheduler) run()
