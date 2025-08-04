@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 31. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-31 18:26:51 krylon>
+// Time-stamp: <2025-08-01 15:34:48 krylon>
 
 package settings
 
@@ -16,7 +16,7 @@ func TestReadDefault(t *testing.T) {
 	var (
 		err  error
 		path string
-		cfg  *Settings
+		cfg  *Options
 	)
 
 	const (
