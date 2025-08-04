@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 07. 06. 2024 by Benjamin Walkenhorst
 // (c) 2024 Benjamin Walkenhorst
-// Time-stamp: <2025-07-21 15:36:25 krylon>
+// Time-stamp: <2025-08-01 15:34:38 krylon>
 
 package web
 
@@ -140,11 +140,6 @@ func Create(addr string) (*Server, error) {
 	srv.router.HandleFunc("/network/{id:(?:\\d+)$}", srv.handleNetworkDetails)
 	srv.router.HandleFunc("/device/all", srv.handleDeviceAll)
 	srv.router.HandleFunc("/device/{id:(?:\\d+)$}", srv.handleDeviceDetails)
-
-	// Agent handlers
-	// srv.router.HandleFunc("/ws/register", srv.handleClientRegister)
-	// srv.router.HandleFunc("/ws/report/load/{name:(?:\\w+$)}", srv.handleClientReportLoad)
-	// srv.router.HandleFunc("/ws/report", srv.handleClientReportData)
 
 	// AJAX Handlers
 	srv.router.HandleFunc("/ajax/beacon", srv.handleBeacon)
