@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 21. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-02 15:41:30 krylon>
+// Time-stamp: <2025-08-04 23:21:16 krylon>
 
 // Package probe implements probing Devices to determine what OS they run.
 package probe
@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -67,27 +68,58 @@ func (p *Probe) initConfig(userName string, keyPath ...string) error {
 	)
 
 	for _, path := range keyPath {
+		var (
+			fh       *os.File
+			keyFiles []string
+		)
+
 		p.log.Printf("[DEBUG] Trying to import %s\n", path)
-		if keyRaw, err = os.ReadFile(path); err != nil {
-			var ex = fmt.Errorf("Failed to read SSH key from %s: %w",
-				keyPath,
-				err)
-			p.log.Printf("[ERROR] %s\n", ex.Error())
-			return ex
-		} else if signer, err = ssh.ParsePrivateKey(keyRaw); err != nil {
-			var ex = fmt.Errorf("Failed to parse SSH key: %w",
-				err)
-			p.log.Printf("[ERROR] %s\n", ex.Error())
-			return ex
-		} else if signer == nil {
-			var ex = fmt.Errorf("ParsePrivateKey did not return an error, but signer is nil!\nKey File: %s\nKey: %s",
-				keyPath,
-				keyRaw)
-			p.log.Printf("[ERROR] %s\n",
-				ex.Error())
-			return ex
+		if fh, err = os.Open(path); err != nil {
+			p.log.Printf("[ERROR] Cannot open %s: %s\n",
+				path,
+				err.Error())
+			continue
 		}
-		keys = append(keys, signer)
+
+		defer fh.Close()
+
+		if keyFiles, err = fh.Readdirnames(-1); err != nil {
+			p.log.Printf("[ERROR] Cannot read files in directory %s: %s\n",
+				path,
+				err.Error())
+			continue
+		}
+
+		for _, file := range keyFiles {
+			if !strings.HasPrefix(file, "id_") || strings.HasSuffix(file, ".pub") {
+				continue
+			}
+
+			var fullPath = filepath.Join(path, file)
+
+			p.log.Printf("[DEBUG] Import SSH key %s\n", fullPath)
+
+			if keyRaw, err = os.ReadFile(fullPath); err != nil {
+				var ex = fmt.Errorf("Failed to read SSH key from %s: %w",
+					fullPath,
+					err)
+				p.log.Printf("[ERROR] %s\n", ex.Error())
+				return ex
+			} else if signer, err = ssh.ParsePrivateKey(keyRaw); err != nil {
+				var ex = fmt.Errorf("Failed to parse SSH key: %w",
+					err)
+				p.log.Printf("[ERROR] %s\n", ex.Error())
+				return ex
+			} else if signer == nil {
+				var ex = fmt.Errorf("ParsePrivateKey did not return an error, but signer is nil!\nKey File: %s\nKey: %s",
+					fullPath,
+					keyRaw)
+				p.log.Printf("[ERROR] %s\n",
+					ex.Error())
+				return ex
+			}
+			keys = append(keys, signer)
+		}
 	}
 
 	// XXX The documentation for the ssh package says very explicitly to NOT use
