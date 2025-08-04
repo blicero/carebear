@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-22 19:14:34 krylon>
+// Time-stamp: <2025-08-01 15:21:26 krylon>
 
 package main
 
@@ -17,6 +17,7 @@ import (
 	"github.com/blicero/carebear/common"
 	"github.com/blicero/carebear/model"
 	"github.com/blicero/carebear/probe"
+	"github.com/blicero/carebear/settings"
 	"github.com/blicero/carebear/web"
 )
 
@@ -31,6 +32,7 @@ func main() {
 		addr     string
 		mode     string
 		username string
+		cfgPath  string
 		port     int
 		srv      *web.Server
 		p        *probe.Probe
@@ -47,6 +49,7 @@ func main() {
 		"user",
 		os.Getenv("USER"),
 		"The username for probing a remote host")
+	flag.StringVar(&cfgPath, "cfg", common.CfgPath, "Path to the configuration file")
 	flag.IntVar(
 		&port,
 		"port",
@@ -56,6 +59,16 @@ func main() {
 	flag.Parse()
 
 	common.InitApp()
+
+	if settings.Settings, err = settings.Parse(cfgPath); err != nil {
+		fmt.Fprintf(
+			os.Stderr,
+			"Failed to read configuration file %s: %s\n",
+			cfgPath,
+			err.Error(),
+		)
+		os.Exit(1)
+	}
 
 	switch strings.ToLower(mode) {
 	case "server":
