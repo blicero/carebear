@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-01 15:27:35 krylon>
+// Time-stamp: <2025-08-04 18:12:45 krylon>
 
 package scanner
 
@@ -147,7 +147,7 @@ func (s *NetworkScanner) run() {
 			continue
 		case cmd = <-s.CmdQ:
 			s.log.Printf("[DEBUG] Scanner received a Command: %s\n",
-				cmd)
+				cmd.ID)
 			s.handleCommand(cmd)
 		}
 	}

@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 24. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-02 16:30:05 krylon>
+// Time-stamp: <2025-08-04 19:08:55 krylon>
 
 // Package scheduler provides the logic to schedule tasks and execute them.
 package scheduler
@@ -27,9 +27,9 @@ import (
 )
 
 const (
-	dbPoolSize    = 4
-	checkInterval = time.Second * 15 // TODO: Adjust to higher value after testing/debugging
-	workerCnt     = 64
+	dbPoolSize     = 4
+	checkInterval  = time.Second * 15 // TODO: Adjust to higher value after testing/debugging
+	probeWorkerCnt = 8
 )
 
 // Task defines describes a Task. Aren't you sorry, you asked?
@@ -68,7 +68,7 @@ func Create() (*Scheduler, error) {
 		return nil, err
 	} else if s.pool, err = database.NewPool(dbPoolSize); err != nil {
 		return nil, err
-	} else if s.sc, err = scanner.NewNetworkScanner(workerCnt); err != nil {
+	} else if s.sc, err = scanner.NewNetworkScanner(); err != nil {
 		return nil, err
 	} else if s.p, err = probe.New(username, keypath); err != nil {
 		return nil, err
@@ -110,8 +110,10 @@ func (s *Scheduler) run() {
 			s.log.Println("[DEBUG] Initiate network scan.")
 			s.sc.CmdQ <- command.Command{ID: command.ScanStart}
 		case <-tickScanDev.C:
-			s.log.Println("[INFO] IMPLEMENTME - Scan Devices")
+			s.log.Println("[INFO] Probe Devices")
+			go s.scanDevices()
 		case <-tickCheckLive.C:
+			s.log.Println("[INFO] IMPLEMENTME - Live Check")
 			continue
 		}
 	}
@@ -127,19 +129,59 @@ func (s *Scheduler) scanDevices() {
 	db = s.pool.Get()
 	defer s.pool.Put(db)
 
-	if err = db.Begin(); err != nil {
-		s.log.Printf("[ERROR] Cannot start database transaction: %s\n",
-			err.Error())
-	} else if devs, err = db.DeviceGetAll(); err != nil {
+	if devs, err = db.DeviceGetAll(); err != nil {
 		s.log.Printf("[ERROR] Failed to load all Devices: %s\n",
 			err.Error())
 		return
 	}
 
+	if len(devs) == 0 {
+		return
+	}
+
+	var devQ = make(chan *model.Device, 2)
+
+	for i := 0; i < probeWorkerCnt; i++ {
+		go s.deviceProbeWorker(i+1, devQ)
+	}
+
 	for _, d := range devs {
+		devQ <- d
+	}
+
+	close(devQ)
+} // func (s *Scheduler) scanDevices()
+
+func (s *Scheduler) deviceProbeWorker(id int, devQ <-chan *model.Device) {
+	var (
+		err error
+		up  *model.Uptime
+		db  *database.Database
+	)
+
+	defer s.log.Printf("[TRACE] Device Probe Worker #%02d is quitting.\n",
+		id)
+
+	if db, err = s.pool.GetNoWait(); err != nil {
+		s.log.Printf("[ERROR] Failed to open database connection for Probe worker %02d: %s\n",
+			id,
+			err.Error())
+		return
+	}
+
+	defer s.pool.Put(db)
+
+	for d := range devQ {
+		s.log.Printf("[DEBUG] Probe device %s (%d)\n",
+			d.Name, d.ID)
+
 		if !d.BigHead {
+			s.log.Printf("[DEBUG] Device %s is irrelevant.\n",
+				d.Name)
 			continue
 		} else if d.OS == "" {
+			s.log.Printf("[INFO] Probing OS of device %s\n",
+				d.Name)
 			var osname string
 			if osname, err = s.p.QueryOS(d, 22); err != nil {
 				s.log.Printf("[ERROR] Failed to query %s for its OS: %s\n",
@@ -151,8 +193,22 @@ func (s *Scheduler) scanDevices() {
 					err.Error())
 			}
 		}
+
+		if up, err = s.p.QueryUptime(d, 22); err != nil {
+			s.log.Printf("[ERROR] Failed to query uptime of Device %s: %s\n",
+				d.Name,
+				err.Error())
+		} else if up == nil {
+			s.log.Println("[CANTHAPPEN] QueryUptime did not return an error, but value was nil")
+		} else if err = db.UptimeAdd(up); err != nil {
+			s.log.Printf("[ERROR] Failed to add Uptime for Device %s to database: %s\n",
+				d.Name,
+				err.Error())
+		}
+
+		// Now we should also query for any relevant info.
 	}
-} // func (s *Scheduler) scanDevices()
+} // func (s *Scheduler) deviceProbeWorker(id int, devQ <-chan *model.Device)
 
 // func (s *Scheduler) run() {
 // 	var (
