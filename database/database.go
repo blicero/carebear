@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-02 16:04:11 krylon>
+// Time-stamp: <2025-08-04 22:53:36 krylon>
 
 package database
 
@@ -1412,7 +1412,7 @@ func (db *Database) UptimeAdd(u *model.Uptime) error {
 	var rows *sql.Rows
 
 EXEC_QUERY:
-	if rows, err = stmt.Query(u.DevID, u.Timestamp.Unix(), u.Load[0], u.Load[1], u.Load[2]); err != nil {
+	if rows, err = stmt.Query(u.DevID, u.Timestamp.Unix(), u.Uptime, u.Load[0], u.Load[1], u.Load[2]); err != nil {
 		if worthARetry(err) {
 			waitForRetry()
 			goto EXEC_QUERY
