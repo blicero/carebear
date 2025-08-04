@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 04. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-30 18:45:41 krylon>
+// Time-stamp: <2025-08-02 15:58:49 krylon>
 
 package database
 
@@ -51,12 +51,14 @@ INSERT INTO device (name, net_id, addr, bighead)
 RETURNING id
 `,
 	query.DeviceUpdateLastSeen: "UPDATE device SET last_seen = ? WHERE id = ?",
+	query.DeviceUpdateOS:       "UPDATE device SET os = ? WHERE id = ?",
 	query.DeviceGetAll: `
 SELECT
     id,
     net_id,
     name,
     addr,
+    os,
     bighead,
     last_seen
 FROM device
@@ -67,6 +69,7 @@ SELECT
     net_id,
     name,
     addr,
+    os,
     bighead,
     last_seen
 FROM device
@@ -77,6 +80,7 @@ SELECT
     id,
     net_id,
     addr,
+    os,
     bighead,
     last_seen
 FROM device
@@ -87,6 +91,7 @@ SELECT
     id,
     name,
     addr,
+    os,
     bighead,
     last_seen
 FROM device

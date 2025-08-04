@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-30 19:04:51 krylon>
+// Time-stamp: <2025-08-02 16:04:11 krylon>
 
 package database
 
@@ -1028,6 +1028,57 @@ EXEC_QUERY:
 	return nil
 } // func (db *Database) DeviceUpdateLastSeen(dev *model.Device, t time.Time) error
 
+// DeviceUpdateOS sets the OS field of a Device.
+func (db *Database) DeviceUpdateOS(dev *model.Device, osname string) error {
+	const qid query.ID = query.DeviceUpdateOS
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Failed to prepare query %s: %s\n",
+			qid,
+			err.Error())
+		panic(err)
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var (
+		res         sql.Result
+		numAffected int64
+	)
+
+EXEC_QUERY:
+	if res, err = stmt.Exec(osname, dev.ID); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		} else {
+			err = fmt.Errorf("Cannot update LastSeen timestamp of Device %s (%d): %w",
+				dev.Name,
+				dev.ID,
+				err)
+			db.log.Printf("[ERROR] %s\n", err.Error())
+			return err
+		}
+	} else if numAffected, err = res.RowsAffected(); err != nil {
+		err = fmt.Errorf("Failed to query query result for number of affected rows: %w",
+			err)
+		db.log.Printf("[ERROR] %s\n", err.Error())
+		return err
+	} else if numAffected != 1 {
+		db.log.Printf("[ERROR] Update LastSeen timestamp of Device %s (%d) affected 0 rows\n",
+			dev.Name,
+			dev.ID)
+	}
+
+	dev.OS = osname
+
+	return nil
+} // func (db *Database) DeviceUpdateOS(dev *model.Device, osname string) error
+
 // DeviceGetAll loads all Devices from the Database.
 func (db *Database) DeviceGetAll() ([]*model.Device, error) {
 	const qid query.ID = query.DeviceGetAll
@@ -1067,7 +1118,14 @@ EXEC_QUERY:
 			dev   = new(model.Device)
 		)
 
-		if err = rows.Scan(&dev.ID, &dev.NetID, &dev.Name, &addr, &dev.BigHead, &stamp); err != nil {
+		if err = rows.Scan(
+			&dev.ID,
+			&dev.NetID,
+			&dev.Name,
+			&addr,
+			&dev.OS,
+			&dev.BigHead,
+			&stamp); err != nil {
 			var ex = fmt.Errorf("Failed to scan row: %w", err)
 			db.log.Printf("[ERROR] %s\n", ex.Error())
 			return nil, ex
@@ -1143,7 +1201,7 @@ EXEC_QUERY:
 			dev   = &model.Device{ID: id}
 		)
 
-		if err = rows.Scan(&dev.NetID, &dev.Name, &addr, &dev.BigHead, &stamp); err != nil {
+		if err = rows.Scan(&dev.NetID, &dev.Name, &addr, &dev.OS, &dev.BigHead, &stamp); err != nil {
 			var ex = fmt.Errorf("Failed to scan row: %w", err)
 			db.log.Printf("[ERROR] %s\n", ex.Error())
 			return nil, err
@@ -1219,7 +1277,7 @@ EXEC_QUERY:
 			dev   = &model.Device{Name: name}
 		)
 
-		if err = rows.Scan(&dev.ID, &dev.NetID, &addr, &dev.BigHead, &stamp); err != nil {
+		if err = rows.Scan(&dev.ID, &dev.NetID, &addr, &dev.OS, &dev.BigHead, &stamp); err != nil {
 			var ex = fmt.Errorf("Failed to scan row: %w", err)
 			db.log.Printf("[ERROR] %s\n", ex.Error())
 			return nil, ex
@@ -1296,7 +1354,7 @@ EXEC_QUERY:
 			dev   = &model.Device{NetID: network.ID}
 		)
 
-		if err = rows.Scan(&dev.ID, &dev.Name, &addr, &dev.BigHead, &stamp); err != nil {
+		if err = rows.Scan(&dev.ID, &dev.Name, &addr, &dev.OS, &dev.BigHead, &stamp); err != nil {
 			var ex = fmt.Errorf("Failed to scan row: %w", err)
 			db.log.Printf("[ERROR] %s\n", ex.Error())
 			return nil, ex

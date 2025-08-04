@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-30 18:37:03 krylon>
+// Time-stamp: <2025-08-01 16:17:57 krylon>
 
 // Package model provides data types used throughout the application.
 package model
@@ -65,6 +65,7 @@ type Device struct {
 	ID       int64
 	NetID    int64
 	Name     string
+	OS       string
 	Addr     []net.Addr
 	BigHead  bool
 	LastSeen time.Time

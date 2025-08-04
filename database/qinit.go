@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-30 19:26:05 krylon>
+// Time-stamp: <2025-08-01 16:29:21 krylon>
 
 package database
 
@@ -25,6 +25,7 @@ CREATE TABLE device (
     net_id	INTEGER NOT NULL,
     name	TEXT UNIQUE NOT NULL,
     addr        TEXT NOT NULL DEFAULT '[]',
+    os          TEXT NOT NULL DEFAULT '',
     bighead     INTEGER NOT NULL DEFAULT 1,
     last_seen   INTEGER NOT NULL DEFAULT 0,
     CHECK (json_valid(addr)),
@@ -58,7 +59,7 @@ CREATE TRIGGER up_host_contact_tr
 AFTER INSERT ON uptime
 BEGIN
     UPDATE device
-    SET last_contact = unixepoch()
+    SET last_seen = unixepoch()
     WHERE id = NEW.dev_id;
 END
 `,
