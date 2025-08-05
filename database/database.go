@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-04 22:53:36 krylon>
+// Time-stamp: <2025-08-05 17:17:34 krylon>
 
 package database
 
@@ -1156,6 +1156,8 @@ EXEC_QUERY:
 			var addr = &net.IPAddr{IP: ip}
 			dev.Addr[idx] = addr
 		}
+
+		dev.LastSeen = time.Unix(stamp, 0)
 
 		devices = append(devices, dev)
 	}
