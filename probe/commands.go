@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-04 22:59:06 krylon>
+// Time-stamp: <2025-08-05 17:02:49 krylon>
 
 package probe
 
@@ -17,28 +17,17 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-// This should suffice for now, but in the long run, it might be nice to reuse the ssh.Client.
+// This should suffice for now, but in the long run, it might be nice to reuse the ssh.Client
 
 func (p *Probe) executeCommand(d *model.Device, port int, cmd string) ([]string, error) {
 	var (
 		err     error
-		client  *ssh.Client
 		session *ssh.Session
 	)
 
-	if client, err = p.getClient(d, port); err != nil {
-		p.log.Printf("Failed to connect to %s: %s\n",
-			d.Name,
-			err.Error())
-	} else if client == nil {
-		var ex = fmt.Errorf("SSH Client connection for device %s is nil", d.Name)
-		p.log.Printf("[ERROR] %s\n", ex.Error())
-		return nil, ex
-	}
-
-	// defer client.Close()
-
-	if session, err = client.NewSession(); err != nil {
+	// 05. 08. 2025
+	// I get a panic originating in NewSession when connecting to a Device that is offline.
+	if session, err = p.getSession(d, port); err != nil {
 		var ex = fmt.Errorf("Failed to create SSH session for %s: %w",
 			d.Name,
 			err)

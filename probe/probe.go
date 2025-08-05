@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 21. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-04 23:21:16 krylon>
+// Time-stamp: <2025-08-05 17:02:38 krylon>
 
 // Package probe implements probing Devices to determine what OS they run.
 package probe
@@ -187,6 +187,40 @@ func (p *Probe) getClient(d *model.Device, port int) (*ssh.Client, error) {
 	p.clients[d.ID] = c
 	return c, nil
 } // func (p *Probe) getClient(d *model.Device, port int) (*ssh.Client, error)
+
+func (p *Probe) getSession(d *model.Device, port int) (s *ssh.Session, e error) {
+	var (
+		err    error
+		client *ssh.Client
+		sess   *ssh.Session
+	)
+
+	defer func() {
+		if ex := recover(); ex != nil {
+			p.log.Printf("[ERROR] Panic trying to get SSH session for %s: %s\n",
+				d.Name,
+				ex)
+			s = nil
+			e = ex.(error)
+		}
+	}()
+
+	if client, err = p.getClient(d, port); err != nil {
+		var ex = fmt.Errorf("Failed to get SSH client for %s: %w",
+			d.Name,
+			err)
+		p.log.Printf("[ERROR] %s\n", ex.Error())
+		return nil, ex
+	} else if sess, err = client.NewSession(); err != nil {
+		var ex = fmt.Errorf("Failed to create new SSH session for %s: %w",
+			d.Name,
+			err)
+		p.log.Printf("[ERROR] %s\n", ex.Error())
+		return nil, ex
+	}
+
+	return sess, nil
+} // func (p *Probe) getSession(d *model.Device, port int) (*ssh.Session, error)
 
 // QueryOS attempts to find out what operating system the device runs.
 func (p *Probe) QueryOS(d *model.Device, port int) (string, error) {
