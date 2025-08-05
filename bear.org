@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2025-08-05 17:35:07 krylon>
+# Time-stamp: <2025-08-05 19:38:06 krylon>
 #+TAGS: internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
 #+TAGS: optimize(o) refactor(r) cleanup(c)
@@ -7,37 +7,39 @@
 #+TODO: MEDITATE(m) PLANNING(p) | SUSPENDED(s)
 #+PRIORITIES: A G D
 
-* Care Bear [8/10]
+* Care Bear [8/21]
   :PROPERTIES:
   :COOKIE_DATA: todo recursive
   :VISIBILITY: children
   :END:
 ** Clocktable
    #+BEGIN: clocktable :scope file :maxlevel 255 :emphasize t
-   #+CAPTION: Clock summary at [2025-08-05 Di 17:35]
-   | Headline                                       | Time       |            |         |      |
-   |------------------------------------------------+------------+------------+---------+------|
-   | *Total time*                                   | *3d 19:33* |            |         |      |
-   |------------------------------------------------+------------+------------+---------+------|
-   | *Care Bear [8/10]*                             | *3d 19:33* |            |         |      |
-   | \_  /Components [9/10]/                        |            | /3d 19:33/ |         |      |
-   | \_    Common [1/1]                             |            |            |    0:06 |      |
-   | \_      Make default log level configurable    |            |            |         | 0:06 |
-   | \_    Model [1/1]                              |            |            |    0:40 |      |
-   | \_      Test IP enumeration                    |            |            |         | 0:28 |
-   | \_    Database [1/2]                           |            |            |    5:29 |      |
-   | \_      Extend schema                          |            |            |         | 0:48 |
-   | \_    Scanner [3/3]                            |            |            |   10:48 |      |
-   | \_      Add a way to scan a specific network   |            |            |         | 0:53 |
-   | \_      Make progress of scan more visible     |            |            |         | 1:28 |
-   | \_      Make number of workers configurable    |            |            |         | 0:24 |
-   | \_    Probe [2/2]                              |            |            |   10:32 |      |
-   | \_    Scheduler [0/0]                          |            |            | 2d 7:20 |      |
-   | \_    Settings [1/1]                           |            |            |    1:37 |      |
-   | \_      Integrate Settings into other packages |            |            |         | 0:57 |
-   | \_    Web UI [0/0]                             |            |            |    7:01 |      |
+   #+CAPTION: Clock summary at [2025-08-05 Di 19:37]
+   | Headline                                       | Time       |            |         |      |      |
+   |------------------------------------------------+------------+------------+---------+------+------|
+   | *Total time*                                   | *3d 20:58* |            |         |      |      |
+   |------------------------------------------------+------------+------------+---------+------+------|
+   | *Care Bear [9/21]*                             | *3d 20:58* |            |         |      |      |
+   | \_  /Components [9/21]/                        |            | /3d 20:58/ |         |      |      |
+   | \_    Common [1/1]                             |            |            |    0:06 |      |      |
+   | \_      Make default log level configurable    |            |            |         | 0:06 |      |
+   | \_    Model [1/1]                              |            |            |    0:40 |      |      |
+   | \_      Test IP enumeration                    |            |            |         | 0:28 |      |
+   | \_    Database [0/2]                           |            |            |    6:00 |      |      |
+   | \_      Extend schema                          |            |            |         | 1:19 |      |
+   | \_    Scanner [3/3]                            |            |            |   10:48 |      |      |
+   | \_      Add a way to scan a specific network   |            |            |         | 0:53 |      |
+   | \_      Make progress of scan more visible     |            |            |         | 1:28 |      |
+   | \_      Make number of workers configurable    |            |            |         | 0:24 |      |
+   | \_    Probe [2/13]                             |            |            |   11:26 |      |      |
+   | \_      Implement commands [0/10]              |            |            |         | 0:54 |      |
+   | \_        Available updates [0/6]              |            |            |         |      | 0:54 |
+   | \_    Scheduler [0/0]                          |            |            | 2d 7:20 |      |      |
+   | \_    Settings [1/1]                           |            |            |    1:37 |      |      |
+   | \_      Integrate Settings into other packages |            |            |         | 0:57 |      |
+   | \_    Web UI [0/0]                             |            |            |    7:01 |      |      |
    #+END:
-** Components [9/10]
+** Components [8/21]
    :PROPERTIES:
    :COOKIE_DATA: todo recursive
    :VISIBILITY: children
@@ -62,7 +64,7 @@
      :LOGBOOK:
      CLOCK: [2025-07-11 Fr 14:50]--[2025-07-11 Fr 15:18] =>  0:28
      :END:
-*** Database [1/2]
+*** Database [0/2]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
     :VISIBILITY: children
@@ -75,9 +77,9 @@
     CLOCK: [2025-07-05 Sa 14:48]--[2025-07-05 Sa 15:44] =>  0:56
     CLOCK: [2025-07-04 Fr 14:54]--[2025-07-04 Fr 15:15] =>  0:21
     :END:
-**** DONE Extend schema
-     CLOSED: [2025-07-30 Mi 19:19]
+**** TODO Extend schema
      :LOGBOOK:
+     CLOCK: [2025-08-05 Di 19:06]--[2025-08-05 Di 19:37] =>  0:31
      CLOCK: [2025-07-30 Mi 18:31]--[2025-07-30 Mi 19:19] =>  0:48
      :END:
      Right now ([2025-07-30 Mi]), the database only stores networks and
@@ -116,7 +118,7 @@
      :LOGBOOK:
      CLOCK: [2025-07-12 Sa 18:10]--[2025-07-12 Sa 18:34] =>  0:24
      :END:
-*** Probe [2/2]
+*** Probe [2/13]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
     :VISIBILITY: children
@@ -131,6 +133,29 @@
     CLOCK: [2025-07-22 Di 14:23]--[2025-07-22 Di 15:35] =>  1:12
     CLOCK: [2025-07-21 Mo 15:40]--[2025-07-21 Mo 17:54] =>  2:14
     :END:
+**** Implement commands [0/10]
+     :PROPERTIES:
+     :COOKIE_DATA: todo recursive
+     :VISIBILITY: children
+     :END:
+***** TODO Available updates [0/6]
+      :PROPERTIES:
+      :COOKIE_DATA: todo recursive
+      :VISIBILITY: children
+      :END:
+      :LOGBOOK:
+      CLOCK: [2025-08-05 Di 18:53]--[2025-08-05 Di 19:05] =>  0:12
+      CLOCK: [2025-08-05 Di 18:09]--[2025-08-05 Di 18:51] =>  0:42
+      :END:
+****** TEST Debian
+****** TEST openSUSE
+****** TEST Fedora
+****** TODO FreeBSD
+****** TODO OpenBSD
+****** TODO Arch
+***** TODO Free disk space
+***** MEDITATE Temperature?
+***** MEDITATE Needs reboot?
 **** DONE Connect via SSH
      CLOSED: [2025-07-22 Di 18:12]
      If possible with public key authentication.
