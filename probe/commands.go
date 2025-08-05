@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-05 17:02:49 krylon>
+// Time-stamp: <2025-08-05 18:49:56 krylon>
 
 package probe
 
@@ -18,6 +18,8 @@ import (
 )
 
 // This should suffice for now, but in the long run, it might be nice to reuse the ssh.Client
+
+const pkgSep = "\t"
 
 func (p *Probe) executeCommand(d *model.Device, port int, cmd string) ([]string, error) {
 	var (
@@ -53,18 +55,117 @@ func (p *Probe) executeCommand(d *model.Device, port int, cmd string) ([]string,
 	return lines, nil
 } // func (p *Probe) executeCommand(d *model.Device, port int, cmd string) ([]string, error)
 
+var patUpdateDebian = regexp.MustCompile(`^([^/]+)/(\S+)\s+(\S+)\s+(\S+)`)
+
 // QueryUpdatesDebian asks a Debian-ish system for a list of available updates.
 func (p *Probe) QueryUpdatesDebian(d *model.Device, port int) ([]string, error) {
-	const cmd = "/usr/bin/apt update && /usr/bin/apt list --upgradable"
+	const cmd = "sudo /usr/bin/apt update && /usr/bin/apt list --upgradable"
+	var (
+		err     error
+		output  []string
+		match   []string
+		updates []string
+	)
 
-	return p.executeCommand(d, port, cmd)
+	if output, err = p.executeCommand(d, port, cmd); err != nil {
+		p.log.Printf("[ERROR] Failed to execute command %q on %s: %s\n",
+			cmd,
+			d.Name,
+			err.Error())
+		return nil, err
+	}
+
+	updates = make([]string, 0)
+
+	for _, l := range output {
+		if match = patUpdateDebian.FindStringSubmatch(l); len(match) > 0 {
+			var upd = strings.Join(match[1:], pkgSep)
+			updates = append(updates, upd)
+		}
+	}
+
+	return updates, nil
 } // func (p *Probe) QueryUpdatesDebian(d *model.Device, port int) ([]string, error)
+
+var patUpdateSuse = regexp.MustCompile(`\s+\|\s+`)
 
 // QueryUpdatesSuse asks an openSuse system for a list of available updates.
 func (p *Probe) QueryUpdatesSuse(d *model.Device, port int) ([]string, error) {
-	const cmd = "zypper ref -f && zypper lu"
-	return p.executeCommand(d, port, cmd)
+	const cmd = "sudo zypper ref -f && zypper lu"
+	var (
+		err     error
+		output  []string
+		updates []string
+	)
+
+	if output, err = p.executeCommand(d, port, cmd); err != nil {
+		p.log.Printf("[ERROR] Failed to execute command %q on %s: %s\n",
+			cmd,
+			d.Name,
+			err.Error())
+		return nil, err
+	}
+
+	updates = make([]string, 0)
+
+	for _, l := range output[4:] {
+		l = strings.Trim(l, " \t\n")
+		var pieces = patUpdateSuse.Split(l, -1)
+		if len(pieces) > 0 {
+			var upd = strings.Join(pieces[1:], pkgSep)
+			updates = append(updates, upd)
+		}
+	}
+
+	return updates, nil
 } // func (p *Probe) QueryUpdatesSuse(d *model.Device, port int) ([]string, error)
+
+var patUpdateDNF = regexp.MustCompile(`\s+`)
+
+// QueryUpdatesFedora asks a Fedora system for a list of available updates.
+// Or any other system based the dnf package manager.
+func (p *Probe) QueryUpdatesFedora(d *model.Device, port int) ([]string, error) {
+	const cmd = "sudo dnf check-upgrade"
+	var (
+		err             error
+		output, updates []string
+	)
+
+	if output, err = p.executeCommand(d, port, cmd); err != nil {
+		return nil, err
+	}
+
+	updates = make([]string, 0)
+
+	for _, l := range output {
+		var pieces = patUpdateDNF.Split(l, -1)
+		if len(pieces) == 3 {
+			var upd = strings.Join(pieces, pkgSep)
+			updates = append(updates, upd)
+		}
+	}
+
+	return updates, nil
+} // func (p *Probe) QueryUpdatesFedora(d *model.Device, port int) ([]string, error)
+
+// QueryUpdates attempts to query the given Device for available updates.
+func (p *Probe) QueryUpdates(d *model.Device, port int) ([]string, error) {
+	switch d.OS {
+	case "Debian GNU/Linux":
+		return p.QueryUpdatesDebian(d, port)
+	case "openSUSE Tumbleweed":
+		fallthrough
+	case "openSUSE Leap":
+		return p.QueryUpdatesSuse(d, port)
+	case "Fedora Linux":
+		return p.QueryUpdatesFedora(d, port)
+	default:
+		p.log.Printf("[INFO] Don't know how to query %s (running %s) for updates\n",
+			d.Name,
+			d.OS)
+		return nil, nil
+	}
+} // func (p *Probe) QueryUpdates(d *model.Device, port int) ([]string, error)
 
 // Sample output:
 // 18:01:18  2 Tage  0:22 an,  2 Benutzer,  Durchschnittslast: 1,08, 0,98, 0,94
