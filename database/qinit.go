@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-01 16:29:21 krylon>
+// Time-stamp: <2025-08-05 19:10:21 krylon>
 
 package database
 
@@ -57,6 +57,30 @@ CREATE TABLE uptime (
 	`
 CREATE TRIGGER up_host_contact_tr
 AFTER INSERT ON uptime
+BEGIN
+    UPDATE device
+    SET last_seen = unixepoch()
+    WHERE id = NEW.dev_id;
+END
+`,
+	`
+CREATE TABLE updates (
+    id INTEGER PRIMARY KEY,
+    dev_id INTEGER NOT NULL,
+    timestamp INTEGER NOT NULL,
+    updates TEXT NOT NULL DEFAULT '[]',
+    UNIQUE (dev_id, timestamp),
+    CHECK (json_valid(updates)),
+    FOREIGN KEY (dev_id) REFERENCES device (id)
+      ON UPDATE RESTRICT
+      ON DELETE CASCADE
+) STRICT
+`,
+	"CREATE INDEX upd_dev_idx ON updates (dev_id)",
+	"CREATE INDEX upd_time_idx ON updates (timestamp)",
+	`
+CREATE TRIGGER upd_host_contact_tr
+AFTER INSERT ON updates
 BEGIN
     UPDATE device
     SET last_seen = unixepoch()

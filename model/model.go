@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-01 16:17:57 krylon>
+// Time-stamp: <2025-08-05 19:04:39 krylon>
 
 // Package model provides data types used throughout the application.
 package model
@@ -97,6 +97,13 @@ type Uptime struct {
 	Timestamp time.Time
 	Uptime    time.Duration
 	Load      [3]float64
+}
+
+type Updates struct {
+	ID               int64
+	DevID            int64
+	Timestamp        time.Time
+	AvailableUpdates []string
 }
 
 // For posterity, I leave this commented out without removing it:
