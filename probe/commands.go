@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-05 18:49:56 krylon>
+// Time-stamp: <2025-08-06 18:28:52 krylon>
 
 package probe
 
@@ -163,7 +163,7 @@ func (p *Probe) QueryUpdates(d *model.Device, port int) ([]string, error) {
 		p.log.Printf("[INFO] Don't know how to query %s (running %s) for updates\n",
 			d.Name,
 			d.OS)
-		return nil, nil
+		return []string{}, nil
 	}
 } // func (p *Probe) QueryUpdates(d *model.Device, port int) ([]string, error)
 
