@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 24. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-04 19:08:55 krylon>
+// Time-stamp: <2025-08-06 18:57:34 krylon>
 
 // Package scheduler provides the logic to schedule tasks and execute them.
 package scheduler
@@ -11,6 +11,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -141,7 +142,7 @@ func (s *Scheduler) scanDevices() {
 
 	var devQ = make(chan *model.Device, 2)
 
-	for i := 0; i < probeWorkerCnt; i++ {
+	for i := range probeWorkerCnt {
 		go s.deviceProbeWorker(i+1, devQ)
 	}
 
@@ -186,11 +187,13 @@ func (s *Scheduler) deviceProbeWorker(id int, devQ <-chan *model.Device) {
 			if osname, err = s.p.QueryOS(d, 22); err != nil {
 				s.log.Printf("[ERROR] Failed to query %s for its OS: %s\n",
 					d.Name, err.Error())
+				continue
 			} else if err = db.DeviceUpdateOS(d, osname); err != nil {
 				s.log.Printf("[ERROR] Failed to set OS of %s to %s: %s\n",
 					d.Name,
 					osname,
 					err.Error())
+				continue
 			}
 		}
 
@@ -198,44 +201,41 @@ func (s *Scheduler) deviceProbeWorker(id int, devQ <-chan *model.Device) {
 			s.log.Printf("[ERROR] Failed to query uptime of Device %s: %s\n",
 				d.Name,
 				err.Error())
+			continue
 		} else if up == nil {
 			s.log.Println("[CANTHAPPEN] QueryUptime did not return an error, but value was nil")
+			continue
 		} else if err = db.UptimeAdd(up); err != nil {
 			s.log.Printf("[ERROR] Failed to add Uptime for Device %s to database: %s\n",
 				d.Name,
 				err.Error())
+			continue
 		}
 
 		// Now we should also query for any relevant info.
+		var updates = &model.Updates{
+			DevID:     d.ID,
+			Timestamp: time.Now(),
+		}
+
+		if updates.AvailableUpdates, err = s.p.QueryUpdates(d, 22); err != nil {
+			s.log.Printf("[ERROR] Failed to query %s for pending updates: %s\n",
+				d.Name,
+				err.Error())
+			continue
+		} else if err = db.UpdatesAdd(updates); err != nil {
+			s.log.Printf("[ERROR] Failed to stored update set for %s to database: %s\n%s\n",
+				d.Name,
+				err.Error(),
+				strings.Join(updates.AvailableUpdates, "\n"))
+			continue
+		}
+
+		if len(updates.AvailableUpdates) > 0 {
+			s.log.Printf("[DEBUG] Device %s has %d available updates:\n%s\n",
+				d.Name,
+				len(updates.AvailableUpdates),
+				strings.Join(updates.AvailableUpdates, "\n"))
+		}
 	}
 } // func (s *Scheduler) deviceProbeWorker(id int, devQ <-chan *model.Device)
-
-// func (s *Scheduler) run() {
-// 	var (
-// 		ticker = time.NewTicker(checkInterval)
-// 	)
-
-// 	defer ticker.Stop()
-
-// 	for s.IsActive() {
-// 		var t Task
-// 		select {
-// 		case <-ticker.C:
-// 			continue
-// 		case t = <-s.TaskQ:
-// 			switch t.Kind {
-// 			case task.NetworkScan:
-// 				var cmd command.Command
-
-// 				if t.ObjectID == 0 {
-// 					cmd.ID = command.ScanStart
-// 				} else {
-// 					cmd.ID = command.ScanOne
-// 					cmd.Target = t.ObjectID
-// 				}
-
-// 				s.sc.CmdQ <- cmd
-// 			}
-// 		}
-// 	}
-// } // func (s *Scheduler) run()
