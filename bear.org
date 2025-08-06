@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2025-08-06 18:19:39 krylon>
+# Time-stamp: <2025-08-06 18:56:52 krylon>
 #+TAGS: internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
 #+TAGS: optimize(o) refactor(r) cleanup(c)
@@ -14,13 +14,13 @@
   :END:
 ** Clocktable
    #+BEGIN: clocktable :scope file :maxlevel 255 :emphasize t
-   #+CAPTION: Clock summary at [2025-08-06 Mi 18:19]
+   #+CAPTION: Clock summary at [2025-08-06 Mi 18:56]
    | Headline                                       | Time       |            |         |      |      |
    |------------------------------------------------+------------+------------+---------+------+------|
-   | *Total time*                                   | *3d 21:56* |            |         |      |      |
+   | *Total time*                                   | *3d 22:32* |            |         |      |      |
    |------------------------------------------------+------------+------------+---------+------+------|
-   | *Care Bear [8/20]*                             | *3d 21:56* |            |         |      |      |
-   | \_  /Components [8/20]/                        |            | /3d 21:56/ |         |      |      |
+   | *Care Bear [8/20]*                             | *3d 22:32* |            |         |      |      |
+   | \_  /Components [8/20]/                        |            | /3d 22:32/ |         |      |      |
    | \_    Common [1/1]                             |            |            |    0:06 |      |      |
    | \_      Make default log level configurable    |            |            |         | 0:06 |      |
    | \_    Model [1/1]                              |            |            |    0:40 |      |      |
@@ -31,9 +31,9 @@
    | \_      Add a way to scan a specific network   |            |            |         | 0:53 |      |
    | \_      Make progress of scan more visible     |            |            |         | 1:28 |      |
    | \_      Make number of workers configurable    |            |            |         | 0:24 |      |
-   | \_    Probe [2/13]                             |            |            |   11:33 |      |      |
-   | \_      Implement commands [0/10]              |            |            |         | 1:01 |      |
-   | \_        Available updates [0/6]              |            |            |         |      | 1:01 |
+   | \_    Probe [2/13]                             |            |            |   12:09 |      |      |
+   | \_      Implement commands [0/10]              |            |            |         | 1:37 |      |
+   | \_        Available updates [0/6]              |            |            |         |      | 1:37 |
    | \_    Scheduler [0/0]                          |            |            | 2d 7:20 |      |      |
    | \_    Settings [1/1]                           |            |            |    1:37 |      |      |
    | \_      Integrate Settings into other packages |            |            |         | 0:57 |      |
@@ -145,6 +145,7 @@
       :VISIBILITY: children
       :END:
       :LOGBOOK:
+      CLOCK: [2025-08-06 Mi 18:20]--[2025-08-06 Mi 18:56] =>  0:36
       CLOCK: [2025-08-06 Mi 17:21]--[2025-08-06 Mi 17:28] =>  0:07
       CLOCK: [2025-08-05 Di 18:53]--[2025-08-05 Di 19:05] =>  0:12
       CLOCK: [2025-08-05 Di 18:09]--[2025-08-05 Di 18:51] =>  0:42
