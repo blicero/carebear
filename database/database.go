@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-05 17:17:34 krylon>
+// Time-stamp: <2025-08-06 18:17:42 krylon>
 
 package database
 
@@ -15,6 +15,7 @@ import (
 	"net"
 	"os"
 	"regexp"
+	"strings"
 	"sync"
 	"time"
 
@@ -1498,3 +1499,186 @@ EXEC_QUERY:
 
 	return data, nil
 } // func (db *Database) UptimeGetByDevice(d *model.Device) ([]*model.Uptime, error)
+
+// UpdatesAdd adds a set of pending updates for a Device to the database.
+func (db *Database) UpdatesAdd(u *model.Updates) error {
+	const qid query.ID = query.UpdatesAdd
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Failed to prepare query %s: %s\n",
+			qid,
+			err.Error())
+		panic(err)
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var (
+		rows  *sql.Rows
+		upStr string
+		buf   []byte
+	)
+
+	if buf, err = json.Marshal(u.AvailableUpdates); err != nil {
+		db.log.Printf("[ERROR] Failed to serialize AvailableUpdates: %s\n\n%s\n\n",
+			err.Error(),
+			strings.Join(u.AvailableUpdates, "\n"))
+	}
+
+	upStr = string(buf)
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(u.DevID, u.Timestamp.Unix(), upStr); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		} else {
+			err = fmt.Errorf("Cannot add Uptime for Device %d: %w",
+				u.DevID,
+				err)
+			db.log.Printf("[ERROR] %s\n", err.Error())
+			return err
+		}
+	} else {
+		var id int64
+
+		defer rows.Close()
+
+		if !rows.Next() {
+			// CANTHAPPEN
+			db.log.Printf("[ERROR] Query %s did not return a value\n",
+				qid)
+			return fmt.Errorf("Query %s did not return a value", qid)
+		} else if err = rows.Scan(&id); err != nil {
+			var ex = fmt.Errorf("Failed to get ID for newly added Uptime: %w",
+				err)
+			db.log.Printf("[ERROR] %s\n", ex.Error())
+			return ex
+		}
+
+		u.ID = id
+		return nil
+	}
+} // func (db *Database) UpdatesAdd(d *model.Device, u *model.Updates) error
+
+// UpdatesGetByDevice loads the sets of available updates for the given Device in reverse
+// chronological order (i.e. most recent first), up to the given maximum number of sets.
+// To get all sets, pass max = -1.
+func (db *Database) UpdatesGetByDevice(d *model.Device, max int64) ([]*model.Updates, error) {
+	const qid query.ID = query.UpdatesGetByDevice
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(d.ID, max); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+	var data = make([]*model.Updates, 0, 16)
+
+	for rows.Next() {
+		var (
+			stamp int64
+			up    = &model.Updates{DevID: d.ID}
+			upstr string
+		)
+
+		if err = rows.Scan(&up.ID, &stamp, &upstr); err != nil {
+			var ex = fmt.Errorf("Failed to scan row: %w", err)
+			db.log.Printf("[ERROR] %s\n", ex.Error())
+			return nil, ex
+		} else if err = json.Unmarshal([]byte(upstr), &up.AvailableUpdates); err != nil {
+			var ex = fmt.Errorf("Failed to parse AvailableUpdates from JSON: %w\n\n%s",
+				err,
+				upstr)
+			db.log.Printf("[ERROR] %s\n", ex.Error())
+			return nil, ex
+		}
+
+		up.Timestamp = time.Unix(stamp, 0)
+		data = append(data, up)
+	}
+
+	return data, nil
+} // func (db *Database) UpdatesGetByDevice(d *model.Device) ([]*model.Updates, error)
+
+// UpdatesGetRecent loads the most recent set of updates for each Device.
+func (db *Database) UpdatesGetRecent() ([]*model.Updates, error) {
+	const qid query.ID = query.UpdatesGetRecent
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+	var data = make([]*model.Updates, 0, 16)
+
+	for rows.Next() {
+		var (
+			stamp int64
+			up    = new(model.Updates)
+			upstr string
+		)
+
+		if err = rows.Scan(&up.ID, &up.DevID, &stamp, &upstr); err != nil {
+			var ex = fmt.Errorf("Failed to scan row: %w", err)
+			db.log.Printf("[ERROR] %s\n", ex.Error())
+			return nil, ex
+		} else if err = json.Unmarshal([]byte(upstr), &up.AvailableUpdates); err != nil {
+			var ex = fmt.Errorf("Failed to parse AvailableUpdates from JSON: %w\n\n%s",
+				err,
+				upstr)
+			db.log.Printf("[ERROR] %s\n", ex.Error())
+			return nil, ex
+		}
+
+		up.Timestamp = time.Unix(stamp, 0)
+		data = append(data, up)
+	}
+
+	return data, nil
+} // func (db *Database) UpdatesGetRecent() ([]*model.Updates, error)

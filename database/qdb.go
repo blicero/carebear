@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 04. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-02 15:58:49 krylon>
+// Time-stamp: <2025-08-06 17:47:32 krylon>
 
 package database
 
@@ -136,6 +136,40 @@ SELECT
     load15
 FROM uptime
 WHERE timestamp BETWEEN ? AND ?
+ORDER BY timestamp DESC
+`,
+	query.UpdatesAdd: `
+INSERT INTO updates (dev_id, timestamp, updates)
+             VALUES (     ?,         ?,       ?)
+RETURNING id
+`,
+	query.UpdatesGetByDevice: `
+SELECT
+    id,
+    timestamp,
+    updates
+FROM updates
+WHERE dev_id = ?
+ORDER BY timestamp DESC
+LIMIT ?
+`,
+	query.UpdatesGetRecent: `
+WITH recent AS (
+    SELECT
+        id,
+        dev_id,
+        timestamp,
+        updates,
+        ROW_NUMBER() OVER (PARTITION BY dev_id ORDER BY timestamp DESC) AS update_no
+    FROM updates
+)
+
+SELECT
+    id,
+    dev_id,
+    timestamp,
+    updates
+FROM recent WHERE update_no = 1
 ORDER BY timestamp DESC
 `,
 }
