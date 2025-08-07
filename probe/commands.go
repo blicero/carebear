@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-06 18:28:52 krylon>
+// Time-stamp: <2025-08-07 18:26:10 krylon>
 
 package probe
 
@@ -152,6 +152,8 @@ func (p *Probe) QueryUpdatesFedora(d *model.Device, port int) ([]string, error) 
 func (p *Probe) QueryUpdates(d *model.Device, port int) ([]string, error) {
 	switch d.OS {
 	case "Debian GNU/Linux":
+		fallthrough
+	case "Raspbian GNU/Linux":
 		return p.QueryUpdatesDebian(d, port)
 	case "openSUSE Tumbleweed":
 		fallthrough
