@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 24. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-06 18:57:34 krylon>
+// Time-stamp: <2025-08-07 18:21:14 krylon>
 
 // Package scheduler provides the logic to schedule tasks and execute them.
 package scheduler
@@ -96,14 +96,16 @@ func (s *Scheduler) Start() {
 
 func (s *Scheduler) run() {
 	var (
-		tickScanNet   = time.NewTicker(settings.Settings.ScanIntervalNet)
-		tickScanDev   = time.NewTicker(settings.Settings.ScanIntervalDev)
-		tickCheckLive = time.NewTicker(checkInterval)
+		tickScanNet      = time.NewTicker(settings.Settings.ScanIntervalNet)
+		tickScanDev      = time.NewTicker(settings.Settings.ScanIntervalDev)
+		tickCheckLive    = time.NewTicker(checkInterval)
+		tickQueryUpdates = time.NewTicker(settings.Settings.ProbeIntervalUpdates)
 	)
 
 	defer tickScanNet.Stop()
 	defer tickScanDev.Stop()
 	defer tickCheckLive.Stop()
+	defer tickQueryUpdates.Stop()
 
 	for s.IsActive() {
 		select {
@@ -116,6 +118,14 @@ func (s *Scheduler) run() {
 		case <-tickCheckLive.C:
 			s.log.Println("[INFO] IMPLEMENTME - Live Check")
 			continue
+		case <-tickQueryUpdates.C:
+			s.log.Println("[INFO] Query pending updates")
+			var updateQ = make(chan *model.Device)
+			go s.deviceDispatch(updateQ)
+
+			for i := range probeWorkerCnt {
+				go s.queryDeviceUpdateWorker(i, updateQ)
+			}
 		}
 	}
 } // func (s *Scheduler) run()
@@ -211,8 +221,54 @@ func (s *Scheduler) deviceProbeWorker(id int, devQ <-chan *model.Device) {
 				err.Error())
 			continue
 		}
+	}
+} // func (s *Scheduler) deviceProbeWorker(id int, devQ <-chan *model.Device)
 
-		// Now we should also query for any relevant info.
+func (s *Scheduler) deviceDispatch(devQ chan<- *model.Device) {
+	var (
+		err  error
+		db   *database.Database
+		devs []*model.Device
+		cnt  int
+	)
+
+	defer func() {
+		close(devQ)
+		s.log.Printf("[TRACE] deviceDispatch is quitting after dispatching %02d Devices.\n",
+			cnt)
+	}()
+
+	db = s.pool.Get()
+	defer s.pool.Put(db)
+
+	if devs, err = db.DeviceGetAll(); err != nil {
+		s.log.Printf("[ERROR] Failed to load all Devices: %s\n",
+			err.Error())
+		return
+	}
+
+	for _, d := range devs {
+		devQ <- d
+		cnt++
+	}
+} // func (s *Scheduler) deviceDispatch(devQ chan <-*model.Device)
+
+func (s *Scheduler) queryDeviceUpdateWorker(id int, devQ <-chan *model.Device) {
+	var (
+		err error
+		db  *database.Database
+	)
+
+	defer s.log.Printf("[DEBUG] queryDeviceUpdateWorker #%02d is quitting.\n", id)
+
+	db = s.pool.Get()
+	defer s.pool.Put(db)
+
+	for d := range devQ {
+		s.log.Printf("[DEBUG] %02d: Query %s for pending updates\n",
+			id,
+			d.Name)
+
 		var updates = &model.Updates{
 			DevID:     d.ID,
 			Timestamp: time.Now(),
@@ -237,5 +293,6 @@ func (s *Scheduler) deviceProbeWorker(id int, devQ <-chan *model.Device) {
 				len(updates.AvailableUpdates),
 				strings.Join(updates.AvailableUpdates, "\n"))
 		}
+
 	}
-} // func (s *Scheduler) deviceProbeWorker(id int, devQ <-chan *model.Device)
+} // func (s *Scheduler) queryDeviceUpdateWorker()

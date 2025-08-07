@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 31. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-01 15:51:29 krylon>
+// Time-stamp: <2025-08-07 16:55:58 krylon>
 
 // Package settings deals with the configuration file. Duh.
 package settings
@@ -19,8 +19,7 @@ import (
 	"github.com/pelletier/go-toml"
 )
 
-const defaultConfig = `
-# Time-stamp: <>
+const defaultConfig = `# Time-stamp: <>
 [Global]
 Debug = true
 LogLevel = "TRACE"
@@ -35,17 +34,19 @@ Workers = 32
 
 [Device]
 LiveTimeout = 300
+IntervalUpdates = 3600
 `
 
 // Options defines several configurable parameters used throughout the application.
 type Options struct {
-	WebPort         int64
-	LiveTimeout     time.Duration
-	ScanIntervalNet time.Duration
-	ScanIntervalDev time.Duration
-	ScanWorkerCount int64
-	Debug           bool
-	LogLevel        string
+	WebPort              int64
+	LiveTimeout          time.Duration
+	ScanIntervalNet      time.Duration
+	ScanIntervalDev      time.Duration
+	ScanWorkerCount      int64
+	Debug                bool
+	LogLevel             string
+	ProbeIntervalUpdates time.Duration
 }
 
 var Settings *Options
@@ -85,6 +86,7 @@ func Parse(path string) (*Options, error) {
 	cfg.ScanWorkerCount = tree.Get("Scanner.Workers").(int64)
 	cfg.LogLevel = tree.Get("Global.LogLevel").(string)
 	cfg.Debug = tree.Get("Global.Debug").(bool)
+	cfg.ProbeIntervalUpdates = time.Duration(tree.Get("Device.IntervalUpdates").(int64)) * time.Second
 
 	for _, dom := range logdomain.AllDomains() {
 		common.PackageLevels[dom] = logutils.LogLevel(cfg.LogLevel)
