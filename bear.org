@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2025-08-06 18:56:52 krylon>
+# Time-stamp: <2025-08-07 20:51:07 krylon>
 #+TAGS: internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
 #+TAGS: optimize(o) refactor(r) cleanup(c)
@@ -7,39 +7,40 @@
 #+TODO: MEDITATE(m) PLANNING(p) | SUSPENDED(s)
 #+PRIORITIES: A G D
 
-* Care Bear [8/20]
+* Care Bear [9/21]
   :PROPERTIES:
   :COOKIE_DATA: todo recursive
   :VISIBILITY: children
   :END:
 ** Clocktable
    #+BEGIN: clocktable :scope file :maxlevel 255 :emphasize t
-   #+CAPTION: Clock summary at [2025-08-06 Mi 18:56]
-   | Headline                                       | Time       |            |         |      |      |
-   |------------------------------------------------+------------+------------+---------+------+------|
-   | *Total time*                                   | *3d 22:32* |            |         |      |      |
-   |------------------------------------------------+------------+------------+---------+------+------|
-   | *Care Bear [8/20]*                             | *3d 22:32* |            |         |      |      |
-   | \_  /Components [8/20]/                        |            | /3d 22:32/ |         |      |      |
-   | \_    Common [1/1]                             |            |            |    0:06 |      |      |
-   | \_      Make default log level configurable    |            |            |         | 0:06 |      |
-   | \_    Model [1/1]                              |            |            |    0:40 |      |      |
-   | \_      Test IP enumeration                    |            |            |         | 0:28 |      |
-   | \_    Database [0/1]                           |            |            |    6:51 |      |      |
-   | \_      Extend schema                          |            |            |         | 2:10 |      |
-   | \_    Scanner [3/3]                            |            |            |   10:48 |      |      |
-   | \_      Add a way to scan a specific network   |            |            |         | 0:53 |      |
-   | \_      Make progress of scan more visible     |            |            |         | 1:28 |      |
-   | \_      Make number of workers configurable    |            |            |         | 0:24 |      |
-   | \_    Probe [2/13]                             |            |            |   12:09 |      |      |
-   | \_      Implement commands [0/10]              |            |            |         | 1:37 |      |
-   | \_        Available updates [0/6]              |            |            |         |      | 1:37 |
-   | \_    Scheduler [0/0]                          |            |            | 2d 7:20 |      |      |
-   | \_    Settings [1/1]                           |            |            |    1:37 |      |      |
-   | \_      Integrate Settings into other packages |            |            |         | 0:57 |      |
-   | \_    Web UI [0/0]                             |            |            |    7:01 |      |      |
+   #+CAPTION: Clock summary at [2025-08-07 Do 20:51]
+   | Headline                                        | Time      |           |         |      |      |
+   |-------------------------------------------------+-----------+-----------+---------+------+------|
+   | *Total time*                                    | *4d 2:29* |           |         |      |      |
+   |-------------------------------------------------+-----------+-----------+---------+------+------|
+   | *Care Bear [9/21]*                              | *4d 2:29* |           |         |      |      |
+   | \_  /Components [9/21]/                         |           | /4d 2:29/ |         |      |      |
+   | \_    Common [1/1]                              |           |           |    0:06 |      |      |
+   | \_      Make default log level configurable     |           |           |         | 0:06 |      |
+   | \_    Model [1/1]                               |           |           |    0:40 |      |      |
+   | \_      Test IP enumeration                     |           |           |         | 0:28 |      |
+   | \_    Database [0/1]                            |           |           |    6:51 |      |      |
+   | \_      Extend schema                           |           |           |         | 2:10 |      |
+   | \_    Scanner [3/3]                             |           |           |   10:48 |      |      |
+   | \_      Add a way to scan a specific network    |           |           |         | 0:53 |      |
+   | \_      Make progress of scan more visible      |           |           |         | 1:28 |      |
+   | \_      Make number of workers configurable     |           |           |         | 0:24 |      |
+   | \_    Probe [2/13]                              |           |           |   12:09 |      |      |
+   | \_      Implement commands [0/10]               |           |           |         | 1:37 |      |
+   | \_        Available updates [0/6]               |           |           |         |      | 1:37 |
+   | \_    Scheduler [0/0]                           |           |           | 2d 7:20 |      |      |
+   | \_    Settings [2/2]                            |           |           |    5:34 |      |      |
+   | \_      Integrate Settings into other packages  |           |           |         | 4:54 |      |
+   | \_        Interval for querying pending updates |           |           |         |      | 3:57 |
+   | \_    Web UI [0/0]                              |           |           |    7:01 |      |      |
    #+END:
-** Components [8/20]
+** Components [9/21]
    :PROPERTIES:
    :COOKIE_DATA: todo recursive
    :VISIBILITY: children
@@ -150,6 +151,8 @@
       CLOCK: [2025-08-05 Di 18:53]--[2025-08-05 Di 19:05] =>  0:12
       CLOCK: [2025-08-05 Di 18:09]--[2025-08-05 Di 18:51] =>  0:42
       :END:
+      Querying for available updates can be rather time-consuming, I should
+      introduce a separate interval for this.
 ****** TEST Debian
 ****** TEST openSUSE
 ****** TEST Fedora
@@ -180,7 +183,7 @@
     :END:
     I have been doing this wrong. The scheduler doesn't receive commands, it
     emits commands, if anything.
-*** Settings [1/1]
+*** Settings [2/2]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
     :VISIBILITY: children
@@ -194,6 +197,11 @@
      CLOCK: [2025-08-01 Fr 15:10]--[2025-08-01 Fr 15:45] =>  0:35
      CLOCK: [2025-07-31 Do 19:03]--[2025-07-31 Do 19:25] =>  0:22
      :END:
+***** DONE Interval for querying pending updates
+      CLOSED: [2025-08-07 Do 20:50]
+      :LOGBOOK:
+      CLOCK: [2025-08-07 Do 16:53]--[2025-08-07 Do 20:50] =>  3:57
+      :END:
 *** Web UI [0/0]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
