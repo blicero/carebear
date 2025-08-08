@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2025-08-07 20:51:07 krylon>
+# Time-stamp: <2025-08-08 19:08:02 krylon>
 #+TAGS: internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
 #+TAGS: optimize(o) refactor(r) cleanup(c)
@@ -7,20 +7,20 @@
 #+TODO: MEDITATE(m) PLANNING(p) | SUSPENDED(s)
 #+PRIORITIES: A G D
 
-* Care Bear [9/21]
+* Care Bear [10/23]
   :PROPERTIES:
   :COOKIE_DATA: todo recursive
   :VISIBILITY: children
   :END:
 ** Clocktable
    #+BEGIN: clocktable :scope file :maxlevel 255 :emphasize t
-   #+CAPTION: Clock summary at [2025-08-07 Do 20:51]
+   #+CAPTION: Clock summary at [2025-08-08 Fr 19:08]
    | Headline                                        | Time      |           |         |      |      |
    |-------------------------------------------------+-----------+-----------+---------+------+------|
-   | *Total time*                                    | *4d 2:29* |           |         |      |      |
+   | *Total time*                                    | *4d 3:15* |           |         |      |      |
    |-------------------------------------------------+-----------+-----------+---------+------+------|
-   | *Care Bear [9/21]*                              | *4d 2:29* |           |         |      |      |
-   | \_  /Components [9/21]/                         |           | /4d 2:29/ |         |      |      |
+   | *Care Bear [10/23]*                             | *4d 3:15* |           |         |      |      |
+   | \_  /Components [10/23]/                        |           | /4d 3:15/ |         |      |      |
    | \_    Common [1/1]                              |           |           |    0:06 |      |      |
    | \_      Make default log level configurable     |           |           |         | 0:06 |      |
    | \_    Model [1/1]                               |           |           |    0:40 |      |      |
@@ -34,13 +34,14 @@
    | \_    Probe [2/13]                              |           |           |   12:09 |      |      |
    | \_      Implement commands [0/10]               |           |           |         | 1:37 |      |
    | \_        Available updates [0/6]               |           |           |         |      | 1:37 |
-   | \_    Scheduler [0/0]                           |           |           | 2d 7:20 |      |      |
+   | \_    Scheduler [0/1]                           |           |           | 2d 7:20 |      |      |
    | \_    Settings [2/2]                            |           |           |    5:34 |      |      |
    | \_      Integrate Settings into other packages  |           |           |         | 4:54 |      |
    | \_        Interval for querying pending updates |           |           |         |      | 3:57 |
-   | \_    Web UI [0/0]                              |           |           |    7:01 |      |      |
+   | \_    Web UI [1/1]                              |           |           |    7:47 |      |      |
+   | \_      Present sysload info and updates in UI  |           |           |         | 0:46 |      |
    #+END:
-** Components [9/21]
+** Components [10/23]
    :PROPERTIES:
    :COOKIE_DATA: todo recursive
    :VISIBILITY: children
@@ -167,7 +168,7 @@
      If possible with public key authentication.
 **** DONE Query OS
      CLOSED: [2025-07-22 Di 18:12]
-*** Scheduler [0/0]
+*** Scheduler [0/1]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
     :VISIBILITY: children
@@ -183,6 +184,7 @@
     :END:
     I have been doing this wrong. The scheduler doesn't receive commands, it
     emits commands, if anything.
+**** TODO Ping Device before probing
 *** Settings [2/2]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
@@ -202,7 +204,7 @@
       :LOGBOOK:
       CLOCK: [2025-08-07 Do 16:53]--[2025-08-07 Do 20:50] =>  3:57
       :END:
-*** Web UI [0/0]
+*** Web UI [1/1]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
     :VISIBILITY: children
@@ -217,5 +219,10 @@
     CLOCK: [2025-07-14 Mo 16:25]--[2025-07-14 Mo 17:04] =>  0:39
     CLOCK: [2025-07-14 Mo 14:26]--[2025-07-14 Mo 16:18] =>  1:52
     :END:
+**** DONE Present sysload info and updates in UI
+     CLOSED: [2025-08-08 Fr 19:07]
+     :LOGBOOK:
+     CLOCK: [2025-08-08 Fr 18:21]--[2025-08-08 Fr 19:07] =>  0:46
+     :END:
 ** Features [0/0]
 ** Bugs [0/0]
