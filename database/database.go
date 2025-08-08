@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-06 18:17:42 krylon>
+// Time-stamp: <2025-08-08 18:30:03 krylon>
 
 package database
 
@@ -1236,6 +1236,7 @@ EXEC_QUERY:
 			dev.Addr[idx] = addr
 		}
 
+		dev.LastSeen = time.Unix(stamp, 0)
 		return dev, nil
 	}
 
@@ -1285,6 +1286,8 @@ EXEC_QUERY:
 			db.log.Printf("[ERROR] %s\n", ex.Error())
 			return nil, ex
 		}
+
+		dev.LastSeen = time.Unix(stamp, 0)
 
 		var alist = make([]string, 0, 2)
 
@@ -1362,6 +1365,8 @@ EXEC_QUERY:
 			db.log.Printf("[ERROR] %s\n", ex.Error())
 			return nil, ex
 		}
+
+		dev.LastSeen = time.Unix(stamp, 0)
 
 		var alist = make([]string, 0, 2)
 
@@ -1623,7 +1628,7 @@ EXEC_QUERY:
 	}
 
 	return data, nil
-} // func (db *Database) UpdatesGetByDevice(d *model.Device) ([]*model.Updates, error)
+} // func (db *Database) UpdatesGetByDevice(d *model.Device, max int64) ([]*model.Updates, error)
 
 // UpdatesGetRecent loads the most recent set of updates for each Device.
 func (db *Database) UpdatesGetRecent() ([]*model.Updates, error) {
