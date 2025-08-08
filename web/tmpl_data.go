@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 06. 05. 2020 by Benjamin Walkenhorst
 // (c) 2020 Benjamin Walkenhorst
-// Time-stamp: <2025-08-08 18:26:44 krylon>
+// Time-stamp: <2025-08-08 18:54:24 krylon>
 //
 // This file contains data structures to be passed to HTML templates.
 
@@ -44,6 +44,7 @@ type tmplDataDeviceDetails struct {
 	tmplDataBase
 	Device  *model.Device
 	Network *model.Network
+	Uptime  *model.Uptime
 	Updates *model.Updates
 }
 

@@ -1,6 +1,6 @@
 {{ define "device_details" }}
 {{/* Created on 10. 06. 2024 */}}
-{{/* Time-stamp: <2025-08-08 18:52:58 krylon> */}}
+{{/* Time-stamp: <2025-08-08 19:03:34 krylon> */}}
 <!DOCTYPE html>
 <html>
     {{ template "head" . }}
@@ -48,6 +48,15 @@
                     <th>Last Contact</th>
                     <td>{{ fmt_time .Device.LastSeen }}</td>
                 </tr>
+                {{ if ne .Uptime nil }}
+                <tr>
+                    <th>Load Average</th>
+                    <td>{{ fmt_time .Uptime.Timestamp }} --
+                        {{ index .Uptime.Load 0 }} /
+                        {{ index .Uptime.Load 1 }} /
+                        {{ index .Uptime.Load 2 }}</td>
+                </tr>
+                {{ end }}
             </table>
         </div>
 
