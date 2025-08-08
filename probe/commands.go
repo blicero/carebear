@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-08 18:14:48 krylon>
+// Time-stamp: <2025-08-08 20:20:40 krylon>
 
 package probe
 
@@ -42,12 +42,16 @@ func (p *Probe) executeCommand(d *model.Device, port int, cmd string) ([]string,
 	var rawOutput []byte
 
 	if rawOutput, err = session.CombinedOutput(cmd); err != nil {
-		var ex = fmt.Errorf("Failed to execute command on %s: %w\n>>> Command: %s",
-			d.Name,
-			err,
-			cmd)
-		p.log.Printf("[ERROR] %s\n", ex.Error())
-		return nil, ex
+		if strings.Contains(cmd, "dnf") && strings.HasPrefix(err.Error(), "Process exited with status 100") {
+			// dnf check-upgrade exits with status 100 if there are updates available.
+		} else {
+			var ex = fmt.Errorf("Failed to execute command on %s: %w\n>>> Command: %s",
+				d.Name,
+				err,
+				cmd)
+			p.log.Printf("[ERROR] %s\n", ex.Error())
+			return nil, ex
+		}
 	}
 
 	var lines = strings.Split(string(rawOutput), "\n")
@@ -125,7 +129,7 @@ var patUpdateDNF = regexp.MustCompile(`\s+`)
 // QueryUpdatesFedora asks a Fedora system for a list of available updates.
 // Or any other system based the dnf package manager.
 func (p *Probe) QueryUpdatesFedora(d *model.Device, port int) ([]string, error) {
-	const cmd = "sudo dnf check-upgrade"
+	const cmd = "env DNF5_FORCE_INTERACTIVE=0 dnf check-upgrade"
 	var (
 		err             error
 		output, updates []string
