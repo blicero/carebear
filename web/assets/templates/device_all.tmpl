@@ -1,6 +1,6 @@
 {{ define "device_all" }}
 {{/* Created on 10. 06. 2024 */}}
-{{/* Time-stamp: <2025-07-16 16:41:43 krylon> */}}
+{{/* Time-stamp: <2025-08-08 19:16:08 krylon> */}}
 <!DOCTYPE html>
 <html>
     {{ template "head" . }}
@@ -25,6 +25,7 @@
                         <th>ID</th>
                         <th>Name</th>
                         <th>Address</th>
+                        <th>OS</th>
                         <th>BigHead</th>
                         <th>Last Contact</th>
                     </tr>
@@ -40,6 +41,7 @@
                             </a>
                         </td>
                         <td>{{ .Addr }}</td>
+                        <td>{{ .OS }}</td>
                         <td>{{ if .BigHead }}Yes{{ else }}No{{ end }}</td>
                         <td>{{ fmt_time .LastSeen }}
                     </tr>
