@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 07. 06. 2024 by Benjamin Walkenhorst
 // (c) 2024 Benjamin Walkenhorst
-// Time-stamp: <2025-08-01 15:34:38 krylon>
+// Time-stamp: <2025-08-08 18:33:03 krylon>
 
 package web
 
@@ -26,6 +26,7 @@ import (
 	"github.com/blicero/carebear/common"
 	"github.com/blicero/carebear/database"
 	"github.com/blicero/carebear/logdomain"
+	"github.com/blicero/carebear/model"
 	"github.com/gorilla/mux"
 )
 
@@ -429,6 +430,7 @@ func (srv *Server) handleDeviceDetails(w http.ResponseWriter, r *http.Request) {
 		id         int64
 		vars       map[string]string
 		db         *database.Database
+		upd        []*model.Updates
 		tmpl       *template.Template
 		data       = tmplDataDeviceDetails{
 			tmplDataBase: tmplDataBase{
@@ -475,8 +477,20 @@ func (srv *Server) handleDeviceDetails(w http.ResponseWriter, r *http.Request) {
 			msg)
 		srv.sendErrorMessage(w, msg)
 		return
+	} else if upd, err = db.UpdatesGetByDevice(data.Device, 1); err != nil {
+		msg = fmt.Sprintf("Failed to load recent Updates for %s (%d): %s",
+			data.Device.Name,
+			data.Device.ID,
+			err.Error())
+		srv.log.Printf("[ERROR] %s\n",
+			msg)
+		srv.sendErrorMessage(w, msg)
+		return
 	}
 
+	if len(upd) > 0 {
+		data.Updates = upd[0]
+	}
 	data.Title = fmt.Sprintf("Details for Device %s", data.Device.Name)
 
 	if tmpl = srv.tmpl.Lookup(tmplName); tmpl == nil {

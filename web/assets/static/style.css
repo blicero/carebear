@@ -1,4 +1,4 @@
-/* Time-stamp: <2023-05-12 10:43:26 krylon> */
+/* Time-stamp: <2025-08-08 18:40:12 krylon> */
 
 body { 
     font-family: Arial,Helvetica,sans-serif;
@@ -162,4 +162,9 @@ div.body {
 
 input.cluster {
     width: 150px;
+}
+
+*.output {
+    font-family: monospace;
+    font-size: 12pt;
 }

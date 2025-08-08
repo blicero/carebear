@@ -1,6 +1,6 @@
 {{ define "device_details" }}
 {{/* Created on 10. 06. 2024 */}}
-{{/* Time-stamp: <2025-07-18 10:29:03 krylon> */}}
+{{/* Time-stamp: <2025-08-08 18:52:58 krylon> */}}
 <!DOCTYPE html>
 <html>
     {{ template "head" . }}
@@ -9,7 +9,9 @@
         {{ template "intro" . }}
 
         <div id="form_device" class="container-fluid">
-            {{ template "device_form" . }}
+            <details legend="Edit">
+                {{ template "device_form" . }}
+            </details>
         </div>
 
         <hr />
@@ -47,6 +49,22 @@
                     <td>{{ fmt_time .Device.LastSeen }}</td>
                 </tr>
             </table>
+        </div>
+
+        <div class="container-fluid" id="device-updates">
+            <h2>Pending Updates</h2>
+
+            {{ if ne .Updates nil }}
+            Last checked {{ fmt_time .Updates.Timestamp }}
+
+            <table class="table table-striped output">
+                {{ range .Updates.AvailableUpdates }}
+                <tr>
+                    <td>{{ . }}</td>
+                </tr>
+                {{ end }}
+            </table>
+            {{ end }}
         </div>
 
         {{ template "footer" . }}
