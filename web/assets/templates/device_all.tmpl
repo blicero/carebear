@@ -1,6 +1,6 @@
 {{ define "device_all" }}
 {{/* Created on 10. 06. 2024 */}}
-{{/* Time-stamp: <2025-08-16 19:54:28 krylon> */}}
+{{/* Time-stamp: <2025-08-16 21:14:19 krylon> */}}
 <!DOCTYPE html>
 <html>
     {{ template "head" . }}
@@ -37,7 +37,9 @@
                         <td>{{ .ID }}</td>
                         <td>
                             <a href="/device/{{ .ID }}">
-                                {{ .Name }}
+                                {{ .Name }}{{ if .IsLive }} <img src="/static/green_button.png"
+                                                                 width="24"
+                                                                 height="24" />{{ end }}
                             </a>
                         </td>
                         <td>{{ .Addr }}</td>

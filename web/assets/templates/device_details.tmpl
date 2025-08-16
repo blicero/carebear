@@ -1,6 +1,6 @@
 {{ define "device_details" }}
 {{/* Created on 10. 06. 2024 */}}
-{{/* Time-stamp: <2025-08-08 19:17:39 krylon> */}}
+{{/* Time-stamp: <2025-08-16 21:12:47 krylon> */}}
 <!DOCTYPE html>
 <html>
     {{ template "head" . }}
@@ -34,7 +34,7 @@
                 </tr>
                 <tr>
                     <th>Name</th>
-                    <td>{{ .Device.Name }}</td>
+                    <td>{{ .Device.Name }}{{ if .Device.IsLive }} <img src="/static/green_button.png" width="24" height="24" />{{ end }}</td>
                 </tr>
                 <tr>
                     <th>Address</th>
