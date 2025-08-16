@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 24. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-16 20:00:15 krylon>
+// Time-stamp: <2025-08-16 20:43:29 krylon>
 
 // Package scheduler provides the logic to schedule tasks and execute them.
 package scheduler
@@ -169,7 +169,7 @@ func (s *Scheduler) pingWorker(id int, pq chan *model.Device) {
 			ping *probing.Pinger
 		)
 
-		if ping, err = probing.NewPinger(d.AddrStr()); err != nil {
+		if ping, err = probing.NewPinger(d.DefaultAddr()); err != nil {
 			s.log.Printf("[ERROR] Ping%02d Failed to create Pinger for %s: %s\n",
 				id,
 				d.AddrStr(),
