@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 24. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-07 18:21:14 krylon>
+// Time-stamp: <2025-08-16 20:00:15 krylon>
 
 // Package scheduler provides the logic to schedule tasks and execute them.
 package scheduler
@@ -25,6 +25,7 @@ import (
 	"github.com/blicero/carebear/scanner/command"
 	"github.com/blicero/carebear/scheduler/task"
 	"github.com/blicero/carebear/settings"
+	probing "github.com/prometheus-community/pro-bing"
 )
 
 const (
@@ -138,6 +139,76 @@ func (s *Scheduler) run() {
 		}
 	}
 } // func (s *Scheduler) run()
+
+func (s *Scheduler) pingDevices() {
+	var pingQ = make(chan *model.Device)
+
+	go s.deviceDispatch(pingQ)
+
+	for i := range probeWorkerCnt {
+		go s.pingWorker(i, pingQ)
+	}
+} // func (s *Scheduler) pingDevices()
+
+func (s *Scheduler) pingWorker(id int, pq chan *model.Device) {
+	var (
+		err error
+		db  *database.Database
+	)
+
+	defer s.log.Printf("[TRACE] Ping worker %02d is finished\n", id)
+
+	if db, err = s.pool.GetNoWait(); err != nil {
+		s.log.Printf("[CRITICAL] Cannot open database connection: %s\n",
+			err.Error())
+		return
+	}
+	defer s.pool.Put(db)
+
+	for d := range pq {
+		var (
+			ping *probing.Pinger
+		)
+
+		if ping, err = probing.NewPinger(d.AddrStr()); err != nil {
+			s.log.Printf("[ERROR] Ping%02d Failed to create Pinger for %s: %s\n",
+				id,
+				d.AddrStr(),
+				err.Error())
+			return
+		}
+
+		ping.Interval = settings.Settings.PingInterval
+		ping.Timeout = settings.Settings.PingTimeout
+		ping.Count = int(settings.Settings.PingCount)
+
+		if err = ping.Run(); err != nil {
+			s.log.Printf("[ERROR] Ping%02d Failed to run Pinger on %s: %s\n",
+				id,
+				d.AddrStr(),
+				err.Error())
+			return
+		}
+
+		var stats = ping.Statistics()
+		if stats.PacketLoss < 100 {
+			if err = db.DeviceUpdateLastSeen(d, time.Now()); err != nil {
+				s.log.Printf("[ERROR] Ping%02d Cannot update LastSeen timestamp for %s: %s\n",
+					id,
+					d.Name,
+					err.Error())
+			} else {
+				s.log.Printf("[DEBUG] Ping%02d - Device %s is alive\n",
+					id,
+					d.Name)
+			}
+		} else {
+			s.log.Printf("[DEBUG] Ping%02d - Device %s is offline\n",
+				id,
+				d.Name)
+		}
+	}
+} // func (s *Scheduler) pingWorker(id int, pq chan *model.Device)
 
 func (s *Scheduler) scanDevices() {
 	var (
