@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 31. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-01 15:34:48 krylon>
+// Time-stamp: <2025-08-16 19:55:30 krylon>
 
 package settings
 
@@ -20,7 +20,7 @@ func TestReadDefault(t *testing.T) {
 	)
 
 	const (
-		liveTimeout = time.Second * 300
+		liveTimeout = time.Second * 600
 		webPort     = 3819
 	)
 

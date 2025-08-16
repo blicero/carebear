@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 31. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-07 16:55:58 krylon>
+// Time-stamp: <2025-08-16 19:51:50 krylon>
 
 // Package settings deals with the configuration file. Duh.
 package settings
@@ -33,8 +33,13 @@ IntervalDev = 60
 Workers = 32
 
 [Device]
-LiveTimeout = 300
+LiveTimeout = 600
 IntervalUpdates = 3600
+
+[Ping]
+Interval = 500
+Count = 4
+Timeout = 5000
 `
 
 // Options defines several configurable parameters used throughout the application.
@@ -47,6 +52,9 @@ type Options struct {
 	Debug                bool
 	LogLevel             string
 	ProbeIntervalUpdates time.Duration
+	PingInterval         time.Duration
+	PingTimeout          time.Duration
+	PingCount            int64
 }
 
 var Settings *Options
@@ -87,6 +95,9 @@ func Parse(path string) (*Options, error) {
 	cfg.LogLevel = tree.Get("Global.LogLevel").(string)
 	cfg.Debug = tree.Get("Global.Debug").(bool)
 	cfg.ProbeIntervalUpdates = time.Duration(tree.Get("Device.IntervalUpdates").(int64)) * time.Second
+	cfg.PingCount = tree.Get("Ping.Count").(int64)
+	cfg.PingInterval = time.Duration(tree.Get("Ping.Interval").(int64)) * time.Millisecond
+	cfg.PingTimeout = time.Duration(tree.Get("Ping.Timeout").(int64)) * time.Millisecond
 
 	for _, dom := range logdomain.AllDomains() {
 		common.PackageLevels[dom] = logutils.LogLevel(cfg.LogLevel)
