@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-04 18:12:45 krylon>
+// Time-stamp: <2025-08-16 20:19:02 krylon>
 
 package scanner
 
@@ -296,12 +296,14 @@ func (s *NetworkScanner) netScanCollector(n *model.Network, devQ <-chan *model.D
 		db  *database.Database
 	)
 
-	if db, err = database.Open(common.DbPath); err != nil {
+	if db, err = database.DBPool.GetNoWait(); err != nil {
 		s.log.Printf("[ERROR] Cannot open database at %s: %s\n",
 			common.DbPath,
 			err.Error())
 		return
 	}
+
+	defer database.DBPool.Put(db)
 
 	for dev := range devQ {
 		var (

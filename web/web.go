@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 07. 06. 2024 by Benjamin Walkenhorst
 // (c) 2024 Benjamin Walkenhorst
-// Time-stamp: <2025-08-08 18:56:07 krylon>
+// Time-stamp: <2025-08-16 20:41:41 krylon>
 
 package web
 
@@ -73,6 +73,7 @@ func Create(addr string) (*Server, error) {
 				".json": "application/json",
 				".html": "text/html",
 			},
+			pool: database.DBPool,
 		}
 	)
 
@@ -80,10 +81,6 @@ func Create(addr string) (*Server, error) {
 		fmt.Fprintf(
 			os.Stderr,
 			"Error creating Logger: %s\n",
-			err.Error())
-		return nil, err
-	} else if srv.pool, err = database.NewPool(poolSize); err != nil {
-		srv.log.Printf("[ERROR] Cannot allocate database connection pool: %s\n",
 			err.Error())
 		return nil, err
 	} else if srv.pool == nil {

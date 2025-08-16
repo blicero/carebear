@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 06. 2024 by Benjamin Walkenhorst
 // (c) 2024 Benjamin Walkenhorst
-// Time-stamp: <2025-07-14 17:33:29 krylon>
+// Time-stamp: <2025-08-16 20:40:26 krylon>
 
 package web
 
@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/blicero/carebear/common"
+	"github.com/blicero/carebear/database"
 )
 
 const testPort = common.DefaultPort + 2
@@ -44,6 +45,10 @@ func TestMain(m *testing.M) {
 	} else if err = common.SetBaseDir(baseDir); err != nil {
 		fmt.Printf("Cannot set base directory to %s: %s\n",
 			baseDir,
+			err.Error())
+		os.Exit(1)
+	} else if err = database.InitPool(4); err != nil {
+		fmt.Printf("Cannot initialize database pool: %s\n",
 			err.Error())
 		os.Exit(1)
 	} else if result = m.Run(); result == 0 {

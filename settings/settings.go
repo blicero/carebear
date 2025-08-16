@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 31. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-16 19:51:50 krylon>
+// Time-stamp: <2025-08-16 20:14:44 krylon>
 
 // Package settings deals with the configuration file. Duh.
 package settings
@@ -23,6 +23,7 @@ const defaultConfig = `# Time-stamp: <>
 [Global]
 Debug = true
 LogLevel = "TRACE"
+PoolSize = 16
 
 [Web]
 Port = 3819
@@ -51,6 +52,7 @@ type Options struct {
 	ScanWorkerCount      int64
 	Debug                bool
 	LogLevel             string
+	PoolSize             int64
 	ProbeIntervalUpdates time.Duration
 	PingInterval         time.Duration
 	PingTimeout          time.Duration
@@ -94,6 +96,7 @@ func Parse(path string) (*Options, error) {
 	cfg.ScanWorkerCount = tree.Get("Scanner.Workers").(int64)
 	cfg.LogLevel = tree.Get("Global.LogLevel").(string)
 	cfg.Debug = tree.Get("Global.Debug").(bool)
+	cfg.PoolSize = tree.Get("Global.PoolSize").(int64)
 	cfg.ProbeIntervalUpdates = time.Duration(tree.Get("Device.IntervalUpdates").(int64)) * time.Second
 	cfg.PingCount = tree.Get("Ping.Count").(int64)
 	cfg.PingInterval = time.Duration(tree.Get("Ping.Interval").(int64)) * time.Millisecond

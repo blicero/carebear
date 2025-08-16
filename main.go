@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-04 18:23:44 krylon>
+// Time-stamp: <2025-08-16 20:17:06 krylon>
 
 package main
 
@@ -16,6 +16,7 @@ import (
 	"syscall"
 
 	"github.com/blicero/carebear/common"
+	"github.com/blicero/carebear/database"
 	"github.com/blicero/carebear/scheduler"
 	"github.com/blicero/carebear/settings"
 	"github.com/blicero/carebear/web"
@@ -62,6 +63,12 @@ func main() {
 			cfgPath,
 			err.Error(),
 		)
+		os.Exit(1)
+	} else if err = database.InitPool(int(settings.Settings.PoolSize)); err != nil {
+		fmt.Fprintf(
+			os.Stderr,
+			"Failed to initialize global database connection pool: %s\n",
+			err.Error())
 		os.Exit(1)
 	}
 

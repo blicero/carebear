@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 07. 06. 2024 by Benjamin Walkenhorst
 // (c) 2024 Benjamin Walkenhorst
-// Time-stamp: <2025-07-14 14:35:31 krylon>
+// Time-stamp: <2025-08-16 20:13:03 krylon>
 
 package database
 
@@ -48,7 +48,7 @@ func NewPool(cnt int) (*Pool, error) {
 		return nil, err
 	}
 
-	for i := 0; i < cnt; i++ {
+	for range cnt {
 		var link = &dblink{next: pool.link}
 
 		if link.db, err = Open(common.DbPath); err != nil {
@@ -155,3 +155,18 @@ func (pool *Pool) IsEmpty() bool {
 	pool.lock.RUnlock()
 	return empty
 } // func (pool *Pool) IsEmpty() bool
+
+// DBPool is the global connection pool for the database.
+var DBPool *Pool
+
+// InitPool initializes the global pool.
+func InitPool(size int) error {
+	var err error
+
+	if DBPool, err = NewPool(size); err != nil {
+		DBPool = nil
+		return err
+	}
+
+	return nil
+} // func InitPool(size int) error

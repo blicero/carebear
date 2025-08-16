@@ -29,7 +29,6 @@ import (
 )
 
 const (
-	dbPoolSize     = 4
 	checkInterval  = time.Second * 15 // TODO: Adjust to higher value after testing/debugging
 	probeWorkerCnt = 8
 )
@@ -68,13 +67,13 @@ func Create() (*Scheduler, error) {
 
 	if s.log, err = common.GetLogger(logdomain.Scheduler); err != nil {
 		return nil, err
-	} else if s.pool, err = database.NewPool(dbPoolSize); err != nil {
-		return nil, err
 	} else if s.sc, err = scanner.NewNetworkScanner(); err != nil {
 		return nil, err
 	} else if s.p, err = probe.New(username, keypath); err != nil {
 		return nil, err
 	}
+
+	s.pool = database.DBPool
 
 	return s, nil
 } // func Create() (*Scheduler, error)
