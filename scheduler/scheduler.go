@@ -95,6 +95,15 @@ func (s *Scheduler) Start() {
 } // func (s *Scheduler) Start()
 
 func (s *Scheduler) run() {
+	s.log.Println("[INFO] Scheduler starting up.")
+	s.log.Printf("[INFO] Scan interval: Net = %s, Devices = %s, Ping = %s, Updates = %s\n",
+		settings.Settings.ScanIntervalNet,
+		settings.Settings.ScanIntervalDev,
+		checkInterval,
+		settings.Settings.ProbeIntervalUpdates)
+
+	defer s.log.Println("[INFO] Scheduler is quitting now.")
+
 	var (
 		tickScanNet      = time.NewTicker(settings.Settings.ScanIntervalNet)
 		tickScanDev      = time.NewTicker(settings.Settings.ScanIntervalDev)
@@ -110,14 +119,14 @@ func (s *Scheduler) run() {
 	for s.IsActive() {
 		select {
 		case <-tickScanNet.C:
-			s.log.Println("[DEBUG] Initiate network scan.")
+			s.log.Println("[INFO] Initiate network scan.")
 			s.sc.CmdQ <- command.Command{ID: command.ScanStart}
 		case <-tickScanDev.C:
 			s.log.Println("[INFO] Probe Devices")
 			go s.scanDevices()
 		case <-tickCheckLive.C:
-			s.log.Println("[INFO] IMPLEMENTME - Live Check")
-			continue
+			s.log.Println("[INFO] Start Ping scan")
+			go s.pingDevices()
 		case <-tickQueryUpdates.C:
 			s.log.Println("[INFO] Query pending updates")
 			var updateQ = make(chan *model.Device)
@@ -266,7 +275,7 @@ func (s *Scheduler) queryDeviceUpdateWorker(id int, devQ <-chan *model.Device) {
 
 	for d := range devQ {
 		s.log.Printf("[DEBUG] %02d: Query %s for pending updates\n",
-			id,
+			id+1,
 			d.Name)
 
 		var updates = &model.Updates{
