@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 24. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-16 20:43:29 krylon>
+// Time-stamp: <2025-08-16 21:47:30 krylon>
 
 // Package scheduler provides the logic to schedule tasks and execute them.
 package scheduler
@@ -190,6 +190,12 @@ func (s *Scheduler) pingWorker(id int, pq chan *model.Device) {
 		}
 
 		var stats = ping.Statistics()
+		s.log.Printf("[DEBUG] Ping%02d - %s - Packet loss is %f%% (%d/%d)\n",
+			id,
+			d.Name,
+			stats.PacketLoss,
+			stats.PacketsRecv,
+			stats.PacketsSent)
 		if stats.PacketLoss < 100 {
 			if err = db.DeviceUpdateLastSeen(d, time.Now()); err != nil {
 				s.log.Printf("[ERROR] Ping%02d Cannot update LastSeen timestamp for %s: %s\n",
