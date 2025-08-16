@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-05 19:04:39 krylon>
+// Time-stamp: <2025-08-09 16:56:31 krylon>
 
 // Package model provides data types used throughout the application.
 package model
@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/blicero/carebear/settings"
 	"github.com/korylprince/ipnetgen"
 )
 
@@ -71,6 +72,12 @@ type Device struct {
 	LastSeen time.Time
 }
 
+// IsLive returns true if the last interaction with the device was within the
+// period configured as LiveTimeout.
+func (d *Device) IsLive() bool {
+	return time.Since(d.LastSeen) < settings.Settings.LiveTimeout
+} // func (d *Device) IsLive() bool
+
 // AddrStr returns a string representation of the receiver's addresses
 // that is also valid JSON.
 func (d *Device) AddrStr() string {
@@ -91,6 +98,13 @@ func (d *Device) AddrStr() string {
 	return buf.String()
 } // func (d *Device) AddrStr() string
 
+// DefaultAddr returns the first IP address, stringified.
+func (d *Device) DefaultAddr() string {
+	return d.Addr[0].String()
+} // func (d *Device) DefaultAddr() string
+
+// Uptime captures the time a Device has been running since last reboot/power-on
+// as well as the current system load average.
 type Uptime struct {
 	ID        int64
 	DevID     int64
@@ -99,6 +113,7 @@ type Uptime struct {
 	Load      [3]float64
 }
 
+// Updates is a set of available Updates on a given Device at a certain point in time.
 type Updates struct {
 	ID               int64
 	DevID            int64
