@@ -1,6 +1,6 @@
 {{ define "device_all" }}
 {{/* Created on 10. 06. 2024 */}}
-{{/* Time-stamp: <2025-08-16 21:14:19 krylon> */}}
+{{/* Time-stamp: <2025-08-16 21:51:07 krylon> */}}
 <!DOCTYPE html>
 <html>
     {{ template "head" . }}
@@ -45,7 +45,7 @@
                         <td>{{ .Addr }}</td>
                         <td>{{ .OS }}</td>
                         <td>{{ if .BigHead }}Yes{{ else }}No{{ end }}</td>
-                        <td>{{ fmt_time .LastSeen }}{{ if .IsLive }} <b>Live!</b>{{ end }}</td>
+                        <td>{{ fmt_time .LastSeen }}</td>
                     </tr>
                     {{ end }}
                 </tbody>
