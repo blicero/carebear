@@ -1,4 +1,4 @@
-/* Time-stamp: <2025-08-08 18:40:12 krylon> */
+/* Time-stamp: <2025-08-09 16:38:03 krylon> */
 
 body { 
     font-family: Arial,Helvetica,sans-serif;
@@ -168,3 +168,8 @@ input.cluster {
     font-family: monospace;
     font-size: 12pt;
 }
+
+*.online {
+    background-color: #4cff42;
+}
+

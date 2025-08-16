@@ -1,6 +1,6 @@
 {{ define "device_all" }}
 {{/* Created on 10. 06. 2024 */}}
-{{/* Time-stamp: <2025-08-08 19:16:08 krylon> */}}
+{{/* Time-stamp: <2025-08-16 19:54:28 krylon> */}}
 <!DOCTYPE html>
 <html>
     {{ template "head" . }}
@@ -33,7 +33,7 @@
 
                 <tbody>
                     {{ range .Devices }}
-                    <tr>
+                    <tr {{ if .IsLive -}} class="online"{{ end }}>
                         <td>{{ .ID }}</td>
                         <td>
                             <a href="/device/{{ .ID }}">
@@ -43,7 +43,7 @@
                         <td>{{ .Addr }}</td>
                         <td>{{ .OS }}</td>
                         <td>{{ if .BigHead }}Yes{{ else }}No{{ end }}</td>
-                        <td>{{ fmt_time .LastSeen }}
+                        <td>{{ fmt_time .LastSeen }}{{ if .IsLive }} <b>Live!</b>{{ end }}</td>
                     </tr>
                     {{ end }}
                 </tbody>

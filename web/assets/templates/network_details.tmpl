@@ -1,6 +1,6 @@
 {{ define "network_details" }}
 {{/* Created on 10. 06. 2024 */}}
-{{/* Time-stamp: <2025-07-18 10:32:33 krylon> */}}
+{{/* Time-stamp: <2025-08-09 16:39:38 krylon> */}}
 <!DOCTYPE html>
 <html>
     {{ template "head" . }}
@@ -28,7 +28,7 @@
 
                 <tbody>
                     {{ range .Devices }}
-                    <tr>
+                    <tr {{- if .IsLive }} class="online"{{ end }}>
                         <td>{{ .ID }}</td>
                         <td>
                             <a href="/device/{{ .ID }}">
