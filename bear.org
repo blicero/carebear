@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2025-08-16 20:48:43 krylon>
+# Time-stamp: <2025-08-18 19:50:17 krylon>
 #+TAGS: internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
 #+TAGS: optimize(o) refactor(r) cleanup(c)
@@ -14,24 +14,25 @@
   :END:
 ** Clocktable
    #+BEGIN: clocktable :scope file :maxlevel 255 :emphasize t
-   #+CAPTION: Clock summary at [2025-08-16 Sa 20:48]
+   #+CAPTION: Clock summary at [2025-08-18 Mo 19:50]
    | Headline                                        | Time      |           |         |      |      |
    |-------------------------------------------------+-----------+-----------+---------+------+------|
-   | *Total time*                                    | *4d 6:24* |           |         |      |      |
+   | *Total time*                                    | *4d 8:24* |           |         |      |      |
    |-------------------------------------------------+-----------+-----------+---------+------+------|
-   | *Care Bear [10/23]*                             | *4d 6:24* |           |         |      |      |
-   | \_  /Components [10/23]/                        |           | /4d 6:24/ |         |      |      |
-   | \_    Common [1/1]                              |           |           |    0:06 |      |      |
+   | *Care Bear [10/23]*                             | *4d 8:24* |           |         |      |      |
+   | \_  /Components [12/26]/                        |           | /4d 8:24/ |         |      |      |
+   | \_    Common [1/2]                              |           |           |    0:06 |      |      |
    | \_      Make default log level configurable     |           |           |         | 0:06 |      |
    | \_    Model [1/1]                               |           |           |    0:40 |      |      |
    | \_      Test IP enumeration                     |           |           |         | 0:28 |      |
-   | \_    Database [1/2]                            |           |           |    7:32 |      |      |
+   | \_    Database [2/2]                            |           |           |    7:32 |      |      |
    | \_      Extend schema                           |           |           |         | 2:10 |      |
    | \_      Make connection pool global             |           |           |         | 0:41 |      |
-   | \_    Scanner [3/3]                             |           |           |   10:48 |      |      |
+   | \_    Scanner [4/4]                             |           |           |   12:48 |      |      |
    | \_      Add a way to scan a specific network    |           |           |         | 0:53 |      |
    | \_      Make progress of scan more visible      |           |           |         | 1:28 |      |
    | \_      Make number of workers configurable     |           |           |         | 0:24 |      |
+   | \_      Detect new devices?                     |           |           |         | 2:00 |      |
    | \_    Probe [2/13]                              |           |           |   13:15 |      |      |
    | \_      Implement commands [0/10]               |           |           |         | 2:43 |      |
    | \_        Available updates [0/6]               |           |           |         |      | 2:43 |
@@ -43,17 +44,18 @@
    | \_      Highlight Devices that are online       |           |           |         | 0:46 |      |
    | \_      Present sysload info and updates in UI  |           |           |         | 0:46 |      |
    #+END:
-** Components [10/23]
+** Components [12/26]
    :PROPERTIES:
    :COOKIE_DATA: todo recursive
    :VISIBILITY: children
    :END:
-*** Common [1/1]
+*** Common [1/2]
 **** DONE [#G] Make default log level configurable
-     CLOSED: [2025-08-01 Fr 15:52]
+     CLOSED: [2025-08-18 Mo 19:38]
      :LOGBOOK:
      CLOCK: [2025-08-01 Fr 15:46]--[2025-08-01 Fr 15:52] =>  0:06
      :END:
+**** TODO Make all log levels configurable
 *** Model [1/1]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
@@ -68,7 +70,7 @@
      :LOGBOOK:
      CLOCK: [2025-07-11 Fr 14:50]--[2025-07-11 Fr 15:18] =>  0:28
      :END:
-*** Database [1/2]
+*** Database [2/2]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
     :VISIBILITY: children
@@ -89,7 +91,9 @@
      :END:
      Right now ([2025-07-30 Mi]), the database only stores networks and
      devices, I obviously want to store more than that. Let's get to it.
-**** TODO More verbose logging
+**** CANCELLED More verbose logging
+     CLOSED: [2025-08-16 Sa 22:09]
+     This was a misguided idea from the start.
 **** DONE Make connection pool global                    :internals:optimize:
      CLOSED: [2025-08-16 Sa 20:48]
      :LOGBOOK:
@@ -97,7 +101,7 @@
      :END:
      The log file reveals lots of connections being opened, probably (my gut
      feeling says) more than are really needed.
-*** Scanner [3/3]
+*** Scanner [4/4]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
     :VISIBILITY: children
@@ -130,6 +134,19 @@
      :LOGBOOK:
      CLOCK: [2025-07-12 Sa 18:10]--[2025-07-12 Sa 18:34] =>  0:24
      :END:
+**** DONE Detect new devices?
+     CLOSED: [2025-08-18 Mo 19:41]
+     :LOGBOOK:
+     CLOCK: [2025-08-18 Mo 17:58]--[2025-08-18 Mo 19:41] =>  1:43
+     CLOCK: [2025-08-16 Sa 22:12]--[2025-08-16 Sa 22:29] =>  0:17
+     :END:
+     I am under the impression that we currently do not detect devices that
+     are newly added to a network after its initial scan.
+     ...
+     ...
+     *big facepalm time here* -- The problem was that I had forgotten to
+     /start/ the Scanner from the Scheduler. So the Scheduler would send these
+     commands, but with the Scanner inert, nothing happened. 🤦
 *** Probe [2/13]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
