@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-16 20:19:02 krylon>
+// Time-stamp: <2025-08-18 19:49:07 krylon>
 
 package scanner
 
@@ -229,7 +229,7 @@ func (s *NetworkScanner) scanStart(n *model.Network) {
 
 	if err = n.Enumerate(addrQ); err != nil {
 		s.log.Printf("[ERROR] Failed to enumerate network %s (%d): %s\n",
-			n.Addr.String(),
+			n.Addr,
 			n.ID,
 			err.Error())
 		return
@@ -243,8 +243,10 @@ func (s *NetworkScanner) scanStart(n *model.Network) {
 	go s.netScanCollector(n, devQ)
 
 	wg.Wait()
-
 	close(devQ)
+
+	s.log.Printf("[INFO] Scan of network %s has concluded\n",
+		n.Addr)
 } // func (s *Scanner) scanStart(n *model.Network)
 
 func (s *NetworkScanner) netScanWorker(nid, wid int64, addrQ <-chan net.IP, devQ chan<- *model.Device, wg *sync.WaitGroup) {
@@ -262,12 +264,19 @@ func (s *NetworkScanner) netScanWorker(nid, wid int64, addrQ <-chan net.IP, devQ
 				names []string
 			)
 
+			// On my home network, I run my own DNS server and create reverse
+			// mappings for all devices I own. So even if a given address is
+			// pingable, if it has no reverse mappings, it's probably a smart phone
+			// or a visitor's laptop or tablet. I.e. something we are not
+			// interested in.
 			if names, err = net.LookupAddr(addr.String()); err != nil {
 				s.log.Printf("[ERROR] Error looking up name for %s: %s\n",
 					addr,
 					err.Error())
 				continue
 			} else if len(names) == 0 {
+				s.log.Printf("[TRACE] No name was found for %s\n",
+					addr)
 				continue
 			}
 
@@ -317,13 +326,19 @@ func (s *NetworkScanner) netScanCollector(n *model.Network, devQ <-chan *model.D
 			continue
 		} else if xdev != nil {
 			// Apparently, this device is already known
+			s.log.Printf("[DEBUG] Device %s already exists in database.\n",
+				dev.Name)
 			continue
 		} else if err = db.DeviceAdd(dev); err != nil {
 			s.log.Printf("[ERROR] Failed to add Device %s (%s) to database: %s\n",
 				dev.Name,
-				dev.Addr[0],
+				dev.DefaultAddr(),
 				err.Error())
 			continue
+		} else {
+			s.log.Printf("[DEBUG] Added new Device %s (%s) to database\n",
+				dev.Name,
+				dev.DefaultAddr())
 		}
 	}
 } // func (s *Scanner) netScanCollector(devQ <-chan *model.Device)
@@ -358,5 +373,5 @@ func (s *NetworkScanner) pingAddr(addr net.IP) bool {
 } // func pingAddr(addr net.IP) bool
 
 func netIsDue(n *model.Network) bool {
-	return n.LastScan.Add(netScanPeriod).Before(time.Now())
+	return time.Since(n.LastScan) >= netScanPeriod
 } // func netIsDue(n *model.Network) bool
