@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 24. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-16 21:47:30 krylon>
+// Time-stamp: <2025-08-18 18:48:30 krylon>
 
 // Package scheduler provides the logic to schedule tasks and execute them.
 package scheduler
@@ -85,11 +85,13 @@ func (s *Scheduler) IsActive() bool {
 
 // Stop clears the Scheduler's active flag.
 func (s *Scheduler) Stop() {
+	s.sc.Stop()
 	s.active.Store(false)
 } // func (s *Scheduler) Stop()
 
 // Start starts the Scheduler's main loop.
 func (s *Scheduler) Start() {
+	s.sc.Start()
 	s.active.Store(true)
 	go s.run()
 } // func (s *Scheduler) Start()
@@ -99,7 +101,7 @@ func (s *Scheduler) run() {
 	s.log.Printf("[INFO] Scan interval: Net = %s, Devices = %s, Ping = %s, Updates = %s\n",
 		settings.Settings.ScanIntervalNet,
 		settings.Settings.ScanIntervalDev,
-		checkInterval,
+		settings.Settings.PingInterval,
 		settings.Settings.ProbeIntervalUpdates)
 
 	defer s.log.Println("[INFO] Scheduler is quitting now.")
@@ -107,7 +109,7 @@ func (s *Scheduler) run() {
 	var (
 		tickScanNet      = time.NewTicker(settings.Settings.ScanIntervalNet)
 		tickScanDev      = time.NewTicker(settings.Settings.ScanIntervalDev)
-		tickCheckLive    = time.NewTicker(checkInterval)
+		tickCheckLive    = time.NewTicker(settings.Settings.PingInterval)
 		tickQueryUpdates = time.NewTicker(settings.Settings.ProbeIntervalUpdates)
 	)
 
