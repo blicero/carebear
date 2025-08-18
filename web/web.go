@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 07. 06. 2024 by Benjamin Walkenhorst
 // (c) 2024 Benjamin Walkenhorst
-// Time-stamp: <2025-08-16 20:41:41 krylon>
+// Time-stamp: <2025-08-18 18:17:37 krylon>
 
 package web
 
@@ -567,7 +567,9 @@ func (srv *Server) handleStaticFile(w http.ResponseWriter, request *http.Request
 
 	var mimeType string
 
-	srv.log.Printf("[TRACE] Delivering static file %s to client\n", filename)
+	srv.log.Printf("[TRACE] Delivering static file %s to client %s\n",
+		filename,
+		request.RemoteAddr)
 
 	var match []string
 
