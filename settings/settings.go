@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 31. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-16 20:14:44 krylon>
+// Time-stamp: <2025-08-18 18:23:00 krylon>
 
 // Package settings deals with the configuration file. Duh.
 package settings
@@ -99,7 +99,7 @@ func Parse(path string) (*Options, error) {
 	cfg.PoolSize = tree.Get("Global.PoolSize").(int64)
 	cfg.ProbeIntervalUpdates = time.Duration(tree.Get("Device.IntervalUpdates").(int64)) * time.Second
 	cfg.PingCount = tree.Get("Ping.Count").(int64)
-	cfg.PingInterval = time.Duration(tree.Get("Ping.Interval").(int64)) * time.Millisecond
+	cfg.PingInterval = time.Duration(tree.Get("Ping.Interval").(int64)) * time.Second
 	cfg.PingTimeout = time.Duration(tree.Get("Ping.Timeout").(int64)) * time.Millisecond
 
 	for _, dom := range logdomain.AllDomains() {
