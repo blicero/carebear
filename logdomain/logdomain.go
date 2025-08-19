@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-24 17:30:57 krylon>
+// Time-stamp: <2025-08-19 18:09:59 krylon>
 
 package logdomain
 
@@ -15,6 +15,7 @@ const (
 	Common ID = iota
 	Database
 	DBPool
+	Ping
 	Probe
 	Scanner
 	Scheduler
@@ -27,6 +28,7 @@ func AllDomains() []ID {
 		Common,
 		Database,
 		DBPool,
+		Ping,
 		Probe,
 		Scanner,
 		Scheduler,
