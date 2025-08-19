@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2025-08-18 19:50:17 krylon>
+# Time-stamp: <2025-08-19 19:47:42 krylon>
 #+TAGS: internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
 #+TAGS: optimize(o) refactor(r) cleanup(c)
@@ -14,48 +14,54 @@
   :END:
 ** Clocktable
    #+BEGIN: clocktable :scope file :maxlevel 255 :emphasize t
-   #+CAPTION: Clock summary at [2025-08-18 Mo 19:50]
-   | Headline                                        | Time      |           |         |      |      |
-   |-------------------------------------------------+-----------+-----------+---------+------+------|
-   | *Total time*                                    | *4d 8:24* |           |         |      |      |
-   |-------------------------------------------------+-----------+-----------+---------+------+------|
-   | *Care Bear [10/23]*                             | *4d 8:24* |           |         |      |      |
-   | \_  /Components [12/26]/                        |           | /4d 8:24/ |         |      |      |
-   | \_    Common [1/2]                              |           |           |    0:06 |      |      |
-   | \_      Make default log level configurable     |           |           |         | 0:06 |      |
-   | \_    Model [1/1]                               |           |           |    0:40 |      |      |
-   | \_      Test IP enumeration                     |           |           |         | 0:28 |      |
-   | \_    Database [2/2]                            |           |           |    7:32 |      |      |
-   | \_      Extend schema                           |           |           |         | 2:10 |      |
-   | \_      Make connection pool global             |           |           |         | 0:41 |      |
-   | \_    Scanner [4/4]                             |           |           |   12:48 |      |      |
-   | \_      Add a way to scan a specific network    |           |           |         | 0:53 |      |
-   | \_      Make progress of scan more visible      |           |           |         | 1:28 |      |
-   | \_      Make number of workers configurable     |           |           |         | 0:24 |      |
-   | \_      Detect new devices?                     |           |           |         | 2:00 |      |
-   | \_    Probe [2/13]                              |           |           |   13:15 |      |      |
-   | \_      Implement commands [0/10]               |           |           |         | 2:43 |      |
-   | \_        Available updates [0/6]               |           |           |         |      | 2:43 |
-   | \_    Scheduler [0/1]                           |           |           | 2d 7:56 |      |      |
-   | \_    Settings [2/2]                            |           |           |    5:34 |      |      |
-   | \_      Integrate Settings into other packages  |           |           |         | 4:54 |      |
-   | \_        Interval for querying pending updates |           |           |         |      | 3:57 |
-   | \_    Web UI [1/2]                              |           |           |    8:33 |      |      |
-   | \_      Highlight Devices that are online       |           |           |         | 0:46 |      |
-   | \_      Present sysload info and updates in UI  |           |           |         | 0:46 |      |
+   #+CAPTION: Clock summary at [2025-08-19 Di 19:47]
+   | Headline                                        | Time       |            |         |      |      |
+   |-------------------------------------------------+------------+------------+---------+------+------|
+   | *Total time*                                    | *4d 10:21* |            |         |      |      |
+   |-------------------------------------------------+------------+------------+---------+------+------|
+   | *Care Bear [10/23]*                             | *4d 10:21* |            |         |      |      |
+   | \_  /Components [14/26]/                        |            | /4d 10:21/ |         |      |      |
+   | \_    Common [2/2]                              |            |            |    0:21 |      |      |
+   | \_      Make default log level configurable     |            |            |         | 0:06 |      |
+   | \_      Make all log levels configurable        |            |            |         | 0:15 |      |
+   | \_    Model [1/1]                               |            |            |    0:40 |      |      |
+   | \_      Test IP enumeration                     |            |            |         | 0:28 |      |
+   | \_    Database [2/2]                            |            |            |    7:32 |      |      |
+   | \_      Extend schema                           |            |            |         | 2:10 |      |
+   | \_      Make connection pool global             |            |            |         | 0:41 |      |
+   | \_    Scanner [4/4]                             |            |            |   12:48 |      |      |
+   | \_      Add a way to scan a specific network    |            |            |         | 0:53 |      |
+   | \_      Make progress of scan more visible      |            |            |         | 1:28 |      |
+   | \_      Make number of workers configurable     |            |            |         | 0:24 |      |
+   | \_      Detect new devices?                     |            |            |         | 2:00 |      |
+   | \_    Probe [2/13]                              |            |            |   13:15 |      |      |
+   | \_      Implement commands [0/10]               |            |            |         | 2:43 |      |
+   | \_        Available updates [0/6]               |            |            |         |      | 2:43 |
+   | \_    Scheduler [0/1]                           |            |            | 2d 9:38 |      |      |
+   | \_      Ping Device before probing              |            |            |         | 1:42 |      |
+   | \_    Settings [2/2]                            |            |            |    5:34 |      |      |
+   | \_      Integrate Settings into other packages  |            |            |         | 4:54 |      |
+   | \_        Interval for querying pending updates |            |            |         |      | 3:57 |
+   | \_    Web UI [1/2]                              |            |            |    8:33 |      |      |
+   | \_      Highlight Devices that are online       |            |            |         | 0:46 |      |
+   | \_      Present sysload info and updates in UI  |            |            |         | 0:46 |      |
    #+END:
-** Components [12/26]
+** Components [14/26]
    :PROPERTIES:
    :COOKIE_DATA: todo recursive
    :VISIBILITY: children
    :END:
-*** Common [1/2]
+*** Common [2/2]
 **** DONE [#G] Make default log level configurable
      CLOSED: [2025-08-18 Mo 19:38]
      :LOGBOOK:
      CLOCK: [2025-08-01 Fr 15:46]--[2025-08-01 Fr 15:52] =>  0:06
      :END:
-**** TODO Make all log levels configurable
+**** DONE Make all log levels configurable
+     CLOSED: [2025-08-19 Di 18:02]
+     :LOGBOOK:
+     CLOCK: [2025-08-19 Di 17:47]--[2025-08-19 Di 18:02] =>  0:15
+     :END:
 *** Model [1/1]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
@@ -213,6 +219,9 @@
     I have been doing this wrong. The scheduler doesn't receive commands, it
     emits commands, if anything.
 **** TODO Ping Device before probing
+     :LOGBOOK:
+     CLOCK: [2025-08-19 Di 18:03]--[2025-08-19 Di 19:45] =>  1:42
+     :END:
 *** Settings [2/2]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
