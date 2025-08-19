@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 24. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-18 18:48:30 krylon>
+// Time-stamp: <2025-08-19 18:36:30 krylon>
 
 // Package scheduler provides the logic to schedule tasks and execute them.
 package scheduler
@@ -20,12 +20,12 @@ import (
 	"github.com/blicero/carebear/database"
 	"github.com/blicero/carebear/logdomain"
 	"github.com/blicero/carebear/model"
+	"github.com/blicero/carebear/ping"
 	"github.com/blicero/carebear/probe"
 	"github.com/blicero/carebear/scanner"
 	"github.com/blicero/carebear/scanner/command"
 	"github.com/blicero/carebear/scheduler/task"
 	"github.com/blicero/carebear/settings"
-	probing "github.com/prometheus-community/pro-bing"
 )
 
 const (
@@ -48,6 +48,7 @@ type Scheduler struct {
 	active atomic.Bool
 	sc     *scanner.NetworkScanner
 	p      *probe.Probe
+	echo   *ping.Pinger
 	TaskQ  chan Task
 }
 
@@ -70,6 +71,8 @@ func Create() (*Scheduler, error) {
 	} else if s.sc, err = scanner.NewNetworkScanner(); err != nil {
 		return nil, err
 	} else if s.p, err = probe.New(username, keypath); err != nil {
+		return nil, err
+	} else if s.echo, err = ping.Create(); err != nil {
 		return nil, err
 	}
 
@@ -167,52 +170,13 @@ func (s *Scheduler) pingWorker(id int, pq chan *model.Device) {
 	defer s.pool.Put(db)
 
 	for d := range pq {
-		var (
-			ping *probing.Pinger
-		)
-
-		if ping, err = probing.NewPinger(d.DefaultAddr()); err != nil {
-			s.log.Printf("[ERROR] Ping%02d Failed to create Pinger for %s: %s\n",
-				id,
-				d.AddrStr(),
-				err.Error())
-			return
-		}
-
-		ping.Interval = settings.Settings.PingInterval
-		ping.Timeout = settings.Settings.PingTimeout
-		ping.Count = int(settings.Settings.PingCount)
-
-		if err = ping.Run(); err != nil {
-			s.log.Printf("[ERROR] Ping%02d Failed to run Pinger on %s: %s\n",
-				id,
-				d.AddrStr(),
-				err.Error())
-			return
-		}
-
-		var stats = ping.Statistics()
-		s.log.Printf("[DEBUG] Ping%02d - %s - Packet loss is %f%% (%d/%d)\n",
-			id,
-			d.Name,
-			stats.PacketLoss,
-			stats.PacketsRecv,
-			stats.PacketsSent)
-		if stats.PacketLoss < 100 {
+		if s.echo.Ping(d) {
 			if err = db.DeviceUpdateLastSeen(d, time.Now()); err != nil {
-				s.log.Printf("[ERROR] Ping%02d Cannot update LastSeen timestamp for %s: %s\n",
+				s.log.Printf("[ERROR] Ping%02d failed to update LastSeen timestamp for %s: %s\n",
 					id,
 					d.Name,
 					err.Error())
-			} else {
-				s.log.Printf("[DEBUG] Ping%02d - Device %s is alive\n",
-					id,
-					d.Name)
 			}
-		} else {
-			s.log.Printf("[DEBUG] Ping%02d - Device %s is offline\n",
-				id,
-				d.Name)
 		}
 	}
 } // func (s *Scheduler) pingWorker(id int, pq chan *model.Device)

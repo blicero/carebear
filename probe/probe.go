@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 21. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-05 17:02:38 krylon>
+// Time-stamp: <2025-08-19 19:07:41 krylon>
 
 // Package probe implements probing Devices to determine what OS they run.
 package probe
@@ -20,6 +20,7 @@ import (
 	"github.com/blicero/carebear/database"
 	"github.com/blicero/carebear/logdomain"
 	"github.com/blicero/carebear/model"
+	"github.com/blicero/carebear/ping"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -34,6 +35,7 @@ type Probe struct {
 	db      *database.Database
 	lock    sync.RWMutex // nolint: unused
 	cfg     *ssh.ClientConfig
+	pp      *ping.Pinger
 	clients map[int64]*ssh.Client
 }
 
@@ -51,6 +53,8 @@ func New(userName string, keyPath ...string) (*Probe, error) {
 			err.Error())
 		return nil, err
 	} else if err = p.initConfig(userName, keyPath...); err != nil {
+		return nil, err
+	} else if p.pp, err = ping.Create(); err != nil {
 		return nil, err
 	}
 
@@ -147,6 +151,12 @@ func (p *Probe) connect(d *model.Device, port int) (*ssh.Client, error) {
 	)
 
 	for _, a := range d.Addr {
+		if !p.pp.PingAddr(a.String()) {
+			p.log.Printf("[INFO] Device %s did not respond to ping\n",
+				d.Name)
+			continue
+		}
+
 		var addr = fmt.Sprintf("%s:%d",
 			a,
 			port)

@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-18 19:49:07 krylon>
+// Time-stamp: <2025-08-19 18:44:40 krylon>
 
 package scanner
 
@@ -18,9 +18,9 @@ import (
 	"github.com/blicero/carebear/database"
 	"github.com/blicero/carebear/logdomain"
 	"github.com/blicero/carebear/model"
+	"github.com/blicero/carebear/ping"
 	"github.com/blicero/carebear/scanner/command"
 	"github.com/blicero/carebear/settings"
-	probing "github.com/prometheus-community/pro-bing"
 )
 
 // TODO Increase this to a reasonable value once testing/debugging is done!
@@ -53,6 +53,7 @@ type NetworkScanner struct {
 	scanMap    map[int64]*scanProgress
 	workerCnt  int64
 	timeout    time.Duration
+	pp         *ping.Pinger
 }
 
 // NewNetworkScanner creates a new NetworkScanner.
@@ -76,6 +77,10 @@ func NewNetworkScanner() (*NetworkScanner, error) {
 		return nil, ex
 	} else if s.db, err = database.Open(common.DbPath); err != nil {
 		s.log.Printf("[ERROR] Cannot open database: %s\n", err.Error())
+		return nil, err
+	} else if s.pp, err = ping.Create(); err != nil {
+		s.log.Printf("[ERROR] Cannot create Pinger: %s\n",
+			err.Error())
 		return nil, err
 	}
 
@@ -258,7 +263,7 @@ func (s *NetworkScanner) netScanWorker(nid, wid int64, addrQ <-chan net.IP, devQ
 
 	for addr := range addrQ {
 		prog.scanned.Add(1)
-		if s.pingAddr(addr) {
+		if s.pp.PingAddr(addr.String()) {
 			var (
 				err   error
 				names []string
@@ -343,34 +348,34 @@ func (s *NetworkScanner) netScanCollector(n *model.Network, devQ <-chan *model.D
 	}
 } // func (s *Scanner) netScanCollector(devQ <-chan *model.Device)
 
-func (s *NetworkScanner) pingAddr(addr net.IP) bool {
-	var (
-		err  error
-		ping *probing.Pinger
-	)
+// func (s *NetworkScanner) pingAddr(addr net.IP) bool {
+// 	var (
+// 		err  error
+// 		ping *probing.Pinger
+// 	)
 
-	if ping, err = probing.NewPinger(addr.String()); err != nil {
-		s.log.Printf("[ERROR] Failed to create Pinger for %s: %s\n",
-			addr,
-			err.Error())
-		return false
-	}
+// 	if ping, err = probing.NewPinger(addr.String()); err != nil {
+// 		s.log.Printf("[ERROR] Failed to create Pinger for %s: %s\n",
+// 			addr,
+// 			err.Error())
+// 		return false
+// 	}
 
-	ping.Interval = pingInterval
-	ping.Timeout = s.timeout
-	ping.Count = pingCount
+// 	ping.Interval = pingInterval
+// 	ping.Timeout = s.timeout
+// 	ping.Count = pingCount
 
-	if err = ping.Run(); err != nil {
-		s.log.Printf("[ERROR] Failed to run Pinger on %s: %s\n",
-			addr,
-			err.Error())
-		return false
-	}
+// 	if err = ping.Run(); err != nil {
+// 		s.log.Printf("[ERROR] Failed to run Pinger on %s: %s\n",
+// 			addr,
+// 			err.Error())
+// 		return false
+// 	}
 
-	var stats = ping.Statistics()
+// 	var stats = ping.Statistics()
 
-	return stats.PacketLoss < 100
-} // func pingAddr(addr net.IP) bool
+// 	return stats.PacketLoss < 100
+// } // func pingAddr(addr net.IP) bool
 
 func netIsDue(n *model.Network) bool {
 	return time.Since(n.LastScan) >= netScanPeriod

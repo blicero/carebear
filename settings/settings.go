@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 31. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-18 18:23:00 krylon>
+// Time-stamp: <2025-08-19 17:56:12 krylon>
 
 // Package settings deals with the configuration file. Duh.
 package settings
@@ -41,6 +41,15 @@ IntervalUpdates = 3600
 Interval = 500
 Count = 4
 Timeout = 5000
+
+[Logging]
+Common = "TRACE"
+Database = "TRACE"
+DBPool = "TRACE"
+Probe = "TRACE"
+Scanner = "TRACE"
+Scheduler = "TRACE"
+Web = "TRACE"
 `
 
 // Options defines several configurable parameters used throughout the application.
@@ -103,7 +112,16 @@ func Parse(path string) (*Options, error) {
 	cfg.PingTimeout = time.Duration(tree.Get("Ping.Timeout").(int64)) * time.Millisecond
 
 	for _, dom := range logdomain.AllDomains() {
-		common.PackageLevels[dom] = logutils.LogLevel(cfg.LogLevel)
+		var lvl string
+
+		if lvl = tree.GetDefault(fmt.Sprintf("Logging.%s", dom), "").(string); lvl != "" {
+			fmt.Printf("CFG Set log level for %s to %s\n",
+				dom,
+				lvl)
+			common.PackageLevels[dom] = logutils.LogLevel(lvl)
+		} else {
+			common.PackageLevels[dom] = logutils.LogLevel(cfg.LogLevel)
+		}
 	}
 
 	return cfg, nil
