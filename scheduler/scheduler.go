@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 24. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-20 17:26:50 krylon>
+// Time-stamp: <2025-08-20 18:03:38 krylon>
 
 // Package scheduler provides the logic to schedule tasks and execute them.
 package scheduler
@@ -261,9 +261,11 @@ func (s *Scheduler) deviceProbeWorker(id int, devQ <-chan *model.Device) {
 		}
 
 		if up, err = s.p.QueryUptime(d, 22); err != nil {
-			s.log.Printf("[ERROR] Failed to query uptime of Device %s: %s\n",
-				d.Name,
-				err.Error())
+			if err != probe.ErrPingOffline {
+				s.log.Printf("[ERROR] Failed to query uptime of Device %s: %s\n",
+					d.Name,
+					err.Error())
+			}
 			continue
 		} else if up == nil {
 			s.log.Println("[CANTHAPPEN] QueryUptime did not return an error, but value was nil")
@@ -328,9 +330,11 @@ func (s *Scheduler) queryDeviceUpdateWorker(id int, devQ <-chan *model.Device) {
 		}
 
 		if updates.AvailableUpdates, err = s.p.QueryUpdates(d, 22); err != nil {
-			s.log.Printf("[ERROR] Failed to query %s for pending updates: %s\n",
-				d.Name,
-				err.Error())
+			if err != probe.ErrPingOffline {
+				s.log.Printf("[ERROR] Failed to query %s for pending updates: %s\n",
+					d.Name,
+					err.Error())
+			}
 			continue
 		} else if err = db.UpdatesAdd(updates); err != nil {
 			s.log.Printf("[ERROR] Failed to stored update set for %s to database: %s\n%s\n",
