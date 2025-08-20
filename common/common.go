@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 07. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2025-07-31 18:01:45 krylon>
+// Time-stamp: <2025-08-20 21:13:57 krylon>
 
 // Package common contains definitions used throughout the application
 package common
@@ -152,9 +152,8 @@ func GetLogger(domain logdomain.ID) (*log.Logger, error) { // nolint: interfacer
 	var (
 		err     error
 		logfile *os.File
-		logName = fmt.Sprintf("%s.%s ",
-			AppName,
-			domain.String())
+		logName = fmt.Sprintf("%s ",
+			strings.ToLower(domain.String()))
 	)
 
 	if err = InitApp(); err != nil {
@@ -185,7 +184,7 @@ func GetLogger(domain logdomain.ID) (*log.Logger, error) { // nolint: interfacer
 		Writer:   writer,
 	}
 
-	logger := log.New(filter, logName, log.Ldate|log.Ltime|log.Lshortfile)
+	logger := log.New(filter, logName, log.Ldate|log.Ltime|log.Lshortfile|log.Lmsgprefix)
 	return logger, nil
 } // func GetLogger(name string) (*log.Logger, error)
 
@@ -201,9 +200,8 @@ func GetLoggerStdout(domain logdomain.ID) (*log.Logger, error) { // nolint: inte
 		logfile *os.File
 		writer  io.Writer
 		lvl     logutils.LogLevel
-		logName = fmt.Sprintf("%s.%s ",
-			AppName,
-			domain.String())
+		logName = fmt.Sprintf("%s ",
+			strings.ToLower(domain.String()))
 	)
 
 	if logfile, err = os.OpenFile(LogPath, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0600); err != nil {
@@ -222,7 +220,7 @@ func GetLoggerStdout(domain logdomain.ID) (*log.Logger, error) { // nolint: inte
 		Writer:   writer,
 	}
 
-	logger := log.New(filter, logName, log.Ldate|log.Ltime|log.Lshortfile)
+	logger := log.New(filter, logName, log.Ldate|log.Ltime|log.Lshortfile|log.Lmsgprefix)
 	return logger, nil
 } // func GetLoggerStdout(name string) (*log.Logger, error)
 
@@ -232,6 +230,8 @@ func GetUUID() string {
 } // func GetUUID() string
 
 // TimeEqual returns true if the two timestamps are less than one second apart.
+//
+// I suppose the name is bad. Should be "TimeEqualish" or something.
 func TimeEqual(t1, t2 time.Time) bool {
 	var delta = t1.Sub(t2)
 
