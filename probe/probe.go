@@ -2,13 +2,14 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 21. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-19 19:07:41 krylon>
+// Time-stamp: <2025-08-20 17:24:45 krylon>
 
 // Package probe implements probing Devices to determine what OS they run.
 package probe
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -23,6 +24,9 @@ import (
 	"github.com/blicero/carebear/ping"
 	"golang.org/x/crypto/ssh"
 )
+
+// ErrPingOffline indicates a Device did not respond to a ping.
+var ErrPingOffline = errors.New("Device did not respond to ping")
 
 const (
 	osReleaseCmd = "/bin/cat /etc/os-release"
@@ -170,7 +174,7 @@ func (p *Probe) connect(d *model.Device, port int) (*ssh.Client, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("Failed to connect to %s", d.Name)
+	return nil, ErrPingOffline
 } // func (p *Probe) connect(d *model.Device, port int) (*ssh.Client, error)
 
 func (p *Probe) getClient(d *model.Device, port int) (*ssh.Client, error) {
@@ -216,6 +220,9 @@ func (p *Probe) getSession(d *model.Device, port int) (s *ssh.Session, e error) 
 	}()
 
 	if client, err = p.getClient(d, port); err != nil {
+		if err == ErrPingOffline {
+			return nil, err
+		}
 		var ex = fmt.Errorf("Failed to get SSH client for %s: %w",
 			d.Name,
 			err)

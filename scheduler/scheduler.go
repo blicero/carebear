@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 24. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-19 18:36:30 krylon>
+// Time-stamp: <2025-08-20 17:26:50 krylon>
 
 // Package scheduler provides the logic to schedule tasks and execute them.
 package scheduler
@@ -246,8 +246,10 @@ func (s *Scheduler) deviceProbeWorker(id int, devQ <-chan *model.Device) {
 				d.Name)
 			var osname string
 			if osname, err = s.p.QueryOS(d, 22); err != nil {
-				s.log.Printf("[ERROR] Failed to query %s for its OS: %s\n",
-					d.Name, err.Error())
+				if err != probe.ErrPingOffline {
+					s.log.Printf("[ERROR] Failed to query %s for its OS: %s\n",
+						d.Name, err.Error())
+				}
 				continue
 			} else if err = db.DeviceUpdateOS(d, osname); err != nil {
 				s.log.Printf("[ERROR] Failed to set OS of %s to %s: %s\n",

@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-08 20:20:40 krylon>
+// Time-stamp: <2025-08-20 17:23:47 krylon>
 
 package probe
 
@@ -30,6 +30,9 @@ func (p *Probe) executeCommand(d *model.Device, port int, cmd string) ([]string,
 	// 05. 08. 2025
 	// I get a panic originating in NewSession when connecting to a Device that is offline.
 	if session, err = p.getSession(d, port); err != nil {
+		if err == ErrPingOffline {
+			return nil, err
+		}
 		var ex = fmt.Errorf("Failed to create SSH session for %s: %w",
 			d.Name,
 			err)
@@ -72,6 +75,9 @@ func (p *Probe) QueryUpdatesDebian(d *model.Device, port int) ([]string, error) 
 	)
 
 	if output, err = p.executeCommand(d, port, cmd); err != nil {
+		if err == ErrPingOffline {
+			return nil, err
+		}
 		p.log.Printf("[ERROR] Failed to execute command %q on %s: %s\n",
 			cmd,
 			d.Name,
@@ -103,6 +109,9 @@ func (p *Probe) QueryUpdatesSuse(d *model.Device, port int) ([]string, error) {
 	)
 
 	if output, err = p.executeCommand(d, port, cmd); err != nil {
+		if err == ErrPingOffline {
+			return nil, err
+		}
 		p.log.Printf("[ERROR] Failed to execute command %q on %s: %s\n",
 			cmd,
 			d.Name,
@@ -194,6 +203,9 @@ func (p *Probe) QueryUptime(d *model.Device, port int) (*model.Uptime, error) {
 	)
 
 	if res, err = p.executeCommand(d, port, cmd); err != nil {
+		if err == ErrPingOffline {
+			return nil, err
+		}
 		var ex = fmt.Errorf("Failed to query uptime/loadavg on %s: %w",
 			d.Name,
 			err)
