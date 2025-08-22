@@ -1,6 +1,6 @@
 {{ define "device_details" }}
 {{/* Created on 10. 06. 2024 */}}
-{{/* Time-stamp: <2025-08-16 21:12:47 krylon> */}}
+{{/* Time-stamp: <2025-08-20 18:07:02 krylon> */}}
 <!DOCTYPE html>
 <html>
     {{ template "head" . }}
@@ -9,7 +9,8 @@
         {{ template "intro" . }}
 
         <div id="form_device" class="container-fluid">
-            <details legend="Edit">
+            <details>
+                <summary>Edit</summary>
                 {{ template "device_form" . }}
             </details>
         </div>
