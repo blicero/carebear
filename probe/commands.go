@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-20 17:23:47 krylon>
+// Time-stamp: <2025-08-20 19:05:45 krylon>
 
 package probe
 
@@ -66,7 +66,7 @@ var patUpdateDebian = regexp.MustCompile(`^([^/]+)/(\S+)\s+(\S+)\s+(\S+)`)
 
 // QueryUpdatesDebian asks a Debian-ish system for a list of available updates.
 func (p *Probe) QueryUpdatesDebian(d *model.Device, port int) ([]string, error) {
-	const cmd = "sudo /usr/bin/apt update && /usr/bin/apt list --upgradable"
+	const cmd = "/usr/bin/apt list --upgradable"
 	var (
 		err     error
 		output  []string
@@ -78,6 +78,7 @@ func (p *Probe) QueryUpdatesDebian(d *model.Device, port int) ([]string, error) 
 		if err == ErrPingOffline {
 			return nil, err
 		}
+		_ = p.disconnect(d)
 		p.log.Printf("[ERROR] Failed to execute command %q on %s: %s\n",
 			cmd,
 			d.Name,
@@ -112,6 +113,7 @@ func (p *Probe) QueryUpdatesSuse(d *model.Device, port int) ([]string, error) {
 		if err == ErrPingOffline {
 			return nil, err
 		}
+		_ = p.disconnect(d)
 		p.log.Printf("[ERROR] Failed to execute command %q on %s: %s\n",
 			cmd,
 			d.Name,
@@ -145,6 +147,10 @@ func (p *Probe) QueryUpdatesFedora(d *model.Device, port int) ([]string, error) 
 	)
 
 	if output, err = p.executeCommand(d, port, cmd); err != nil {
+		if err == ErrPingOffline {
+			return nil, err
+		}
+		_ = p.disconnect(d)
 		return nil, err
 	}
 
@@ -175,7 +181,7 @@ func (p *Probe) QueryUpdates(d *model.Device, port int) ([]string, error) {
 	case "Fedora Linux":
 		return p.QueryUpdatesFedora(d, port)
 	default:
-		p.log.Printf("[INFO] Don't know how to query %s (running %s) for updates\n",
+		p.log.Printf("[TRACE] Don't know how to query %s (running %s) for updates\n",
 			d.Name,
 			d.OS)
 		return []string{}, nil

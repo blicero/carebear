@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 21. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-20 17:24:45 krylon>
+// Time-stamp: <2025-08-20 18:31:44 krylon>
 
 // Package probe implements probing Devices to determine what OS they run.
 package probe
@@ -11,6 +11,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -148,6 +149,36 @@ func (p *Probe) initConfig(userName string, keyPath ...string) error {
 	return nil
 } // func (p *Probe) initConfig(keyPath string) error
 
+func (p *Probe) disconnect(d *model.Device) error {
+	p.lock.Lock()
+	defer p.lock.Unlock()
+
+	var (
+		err error
+		ok  bool
+		c   *ssh.Client
+	)
+
+	if c, ok = p.clients[d.ID]; !ok {
+		return nil
+	}
+
+	delete(p.clients, d.ID)
+
+	if c == nil {
+		goto END
+	}
+
+	if err = c.Close(); err != nil {
+		p.log.Printf("[ERROR] Failed to close SSH connection to %s: %s\n",
+			d.Name,
+			err.Error())
+	}
+
+END:
+	return err
+} // func (p *Probe) disconnect(d *model.Device) error
+
 func (p *Probe) connect(d *model.Device, port int) (*ssh.Client, error) {
 	var (
 		err    error
@@ -156,8 +187,8 @@ func (p *Probe) connect(d *model.Device, port int) (*ssh.Client, error) {
 
 	for _, a := range d.Addr {
 		if !p.pp.PingAddr(a.String()) {
-			p.log.Printf("[INFO] Device %s did not respond to ping\n",
-				d.Name)
+			// p.log.Printf("[INFO] Device %s did not respond to ping\n",
+			// 	d.Name)
 			continue
 		}
 
@@ -229,6 +260,9 @@ func (p *Probe) getSession(d *model.Device, port int) (s *ssh.Session, e error) 
 		p.log.Printf("[ERROR] %s\n", ex.Error())
 		return nil, ex
 	} else if sess, err = client.NewSession(); err != nil {
+		if errors.Is(err, io.EOF) {
+			_ = p.disconnect(d)
+		}
 		var ex = fmt.Errorf("Failed to create new SSH session for %s: %w",
 			d.Name,
 			err)
