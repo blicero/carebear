@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2025-08-20 17:26:05 krylon>
+# Time-stamp: <2025-08-22 19:39:23 krylon>
 #+TAGS: internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
 #+TAGS: optimize(o) refactor(r) cleanup(c)
@@ -7,51 +7,55 @@
 #+TODO: MEDITATE(m) PLANNING(p) | SUSPENDED(s)
 #+PRIORITIES: A G D
 
-* Care Bear [10/23]
+* Care Bear [17/28]
   :PROPERTIES:
   :COOKIE_DATA: todo recursive
   :VISIBILITY: children
   :END:
 ** Clocktable
    #+BEGIN: clocktable :scope file :maxlevel 255 :emphasize t
-   #+CAPTION: Clock summary at [2025-08-20 Mi 17:26]
-   | Headline                                        | Time       |            |          |      |      |
-   |-------------------------------------------------+------------+------------+----------+------+------|
-   | *Total time*                                    | *4d 10:56* |            |          |      |      |
-   |-------------------------------------------------+------------+------------+----------+------+------|
-   | *Care Bear [10/23]*                             | *4d 10:56* |            |          |      |      |
-   | \_  /Components [14/26]/                        |            | /4d 10:56/ |          |      |      |
-   | \_    Common [2/2]                              |            |            |     0:21 |      |      |
-   | \_      Make default log level configurable     |            |            |          | 0:06 |      |
-   | \_      Make all log levels configurable        |            |            |          | 0:15 |      |
-   | \_    Model [1/1]                               |            |            |     0:40 |      |      |
-   | \_      Test IP enumeration                     |            |            |          | 0:28 |      |
-   | \_    Database [2/2]                            |            |            |     7:32 |      |      |
-   | \_      Extend schema                           |            |            |          | 2:10 |      |
-   | \_      Make connection pool global             |            |            |          | 0:41 |      |
-   | \_    Scanner [4/4]                             |            |            |    12:48 |      |      |
-   | \_      Add a way to scan a specific network    |            |            |          | 0:53 |      |
-   | \_      Make progress of scan more visible      |            |            |          | 1:28 |      |
-   | \_      Make number of workers configurable     |            |            |          | 0:24 |      |
-   | \_      Detect new devices?                     |            |            |          | 2:00 |      |
-   | \_    Probe [2/13]                              |            |            |    13:15 |      |      |
-   | \_      Implement commands [0/10]               |            |            |          | 2:43 |      |
-   | \_        Available updates [0/6]               |            |            |          |      | 2:43 |
-   | \_    Scheduler [1/1]                           |            |            | 2d 10:13 |      |      |
-   | \_      Ping Device before probing              |            |            |          | 2:17 |      |
-   | \_    Settings [2/2]                            |            |            |     5:34 |      |      |
-   | \_      Integrate Settings into other packages  |            |            |          | 4:54 |      |
-   | \_        Interval for querying pending updates |            |            |          |      | 3:57 |
-   | \_    Web UI [1/2]                              |            |            |     8:33 |      |      |
-   | \_      Highlight Devices that are online       |            |            |          | 0:46 |      |
-   | \_      Present sysload info and updates in UI  |            |            |          | 0:46 |      |
+   #+CAPTION: Clock summary at [2025-08-22 Fr 19:39]
+   | Headline                                        | Time       |            |          |      |      |      |
+   |-------------------------------------------------+------------+------------+----------+------+------+------|
+   | *Total time*                                    | *4d 12:14* |            |          |      |      |      |
+   |-------------------------------------------------+------------+------------+----------+------+------+------|
+   | *Care Bear [17/28]*                             | *4d 12:14* |            |          |      |      |      |
+   | \_  /Components [17/28]/                        |            | /4d 12:14/ |          |      |      |      |
+   | \_    Common [3/3]                              |            |            |     0:27 |      |      |      |
+   | \_      Make default log level configurable     |            |            |          | 0:06 |      |      |
+   | \_      Make all log levels configurable        |            |            |          | 0:15 |      |      |
+   | \_      Prettify / Justify output of Logger     |            |            |          | 0:06 |      |      |
+   | \_    Model [1/1]                               |            |            |     0:40 |      |      |      |
+   | \_      Test IP enumeration                     |            |            |          | 0:28 |      |      |
+   | \_    Database [2/2]                            |            |            |     7:32 |      |      |      |
+   | \_      Extend schema                           |            |            |          | 2:10 |      |      |
+   | \_      Make connection pool global             |            |            |          | 0:41 |      |      |
+   | \_    Scanner [4/4]                             |            |            |    12:48 |      |      |      |
+   | \_      Add a way to scan a specific network    |            |            |          | 0:53 |      |      |
+   | \_      Make progress of scan more visible      |            |            |          | 1:28 |      |      |
+   | \_      Make number of workers configurable     |            |            |          | 0:24 |      |      |
+   | \_      Detect new devices?                     |            |            |          | 2:00 |      |      |
+   | \_    Probe [2/13]                              |            |            |    14:26 |      |      |      |
+   | \_      Implement commands [0/10]               |            |            |          | 3:54 |      |      |
+   | \_        Available updates [0/6]               |            |            |          |      | 3:54 |      |
+   | \_          Debian                              |            |            |          |      |      | 0:18 |
+   | \_          openSUSE                            |            |            |          |      |      | 0:53 |
+   | \_    Scheduler [1/1]                           |            |            | 2d 10:13 |      |      |      |
+   | \_      Ping Device before probing              |            |            |          | 2:17 |      |      |
+   | \_    Settings [2/2]                            |            |            |     5:34 |      |      |      |
+   | \_      Integrate Settings into other packages  |            |            |          | 4:54 |      |      |
+   | \_        Interval for querying pending updates |            |            |          |      | 3:57 |      |
+   | \_    Web UI [2/2]                              |            |            |     8:34 |      |      |      |
+   | \_      Add summary to <details>                |            |            |          | 0:01 |      |      |
+   | \_      Highlight Devices that are online       |            |            |          | 0:46 |      |      |
+   | \_      Present sysload info and updates in UI  |            |            |          | 0:46 |      |      |
    #+END:
-** Components [14/26]
+** Components [17/28]
    :PROPERTIES:
    :COOKIE_DATA: todo recursive
    :VISIBILITY: children
    :END:
-*** Common [2/2]
+*** Common [3/3]
 **** DONE [#G] Make default log level configurable
      CLOSED: [2025-08-18 Mo 19:38]
      :LOGBOOK:
@@ -61,6 +65,11 @@
      CLOSED: [2025-08-19 Di 18:02]
      :LOGBOOK:
      CLOCK: [2025-08-19 Di 17:47]--[2025-08-19 Di 18:02] =>  0:15
+     :END:
+**** DONE Prettify / Justify output of Logger
+     CLOSED: [2025-08-22 Fr 19:39]
+     :LOGBOOK:
+     CLOCK: [2025-08-20 Mi 19:09]--[2025-08-20 Mi 19:15] =>  0:06
      :END:
 *** Model [1/1]
     :PROPERTIES:
@@ -188,7 +197,13 @@
       Querying for available updates can be rather time-consuming, I should
       introduce a separate interval for this.
 ****** TEST Debian
+       :LOGBOOK:
+       CLOCK: [2025-08-20 Mi 17:49]--[2025-08-20 Mi 18:07] =>  0:18
+       :END:
 ****** TEST openSUSE
+       :LOGBOOK:
+       CLOCK: [2025-08-20 Mi 18:16]--[2025-08-20 Mi 19:09] =>  0:53
+       :END:
 ****** TEST Fedora
 ****** TODO FreeBSD
 ****** TODO OpenBSD
@@ -243,7 +258,7 @@
       :LOGBOOK:
       CLOCK: [2025-08-07 Do 16:53]--[2025-08-07 Do 20:50] =>  3:57
       :END:
-*** Web UI [1/2]
+*** Web UI [2/2]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
     :VISIBILITY: children
@@ -258,7 +273,12 @@
     CLOCK: [2025-07-14 Mo 16:25]--[2025-07-14 Mo 17:04] =>  0:39
     CLOCK: [2025-07-14 Mo 14:26]--[2025-07-14 Mo 16:18] =>  1:52
     :END:
-**** TODO Highlight Devices that are online
+**** Add summary to <details>
+     :LOGBOOK:
+     CLOCK: [2025-08-20 Mi 18:07]--[2025-08-20 Mi 18:08] =>  0:01
+     :END:
+**** DONE Highlight Devices that are online
+     CLOSED: [2025-08-20 Mi 17:27]
      :LOGBOOK:
      CLOCK: [2025-08-09 Sa 16:29]--[2025-08-09 Sa 17:15] =>  0:46
      :END:
