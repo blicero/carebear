@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 07. 06. 2024 by Benjamin Walkenhorst
 // (c) 2024 Benjamin Walkenhorst
-// Time-stamp: <2025-08-18 18:17:37 krylon>
+// Time-stamp: <2025-08-26 15:21:39 krylon>
 
 package web
 
@@ -373,11 +373,12 @@ func (srv *Server) handleDeviceAll(w http.ResponseWriter, r *http.Request) {
 	)
 
 	var (
-		err  error
-		msg  string
-		db   *database.Database
-		tmpl *template.Template
-		data = tmplDataDeviceAll{
+		err     error
+		msg     string
+		db      *database.Database
+		tmpl    *template.Template
+		updates []*model.Updates
+		data    = tmplDataDeviceAll{
 			tmplDataBase: tmplDataBase{
 				Title: "All Devices",
 				Debug: common.Debug,
@@ -395,6 +396,18 @@ func (srv *Server) handleDeviceAll(w http.ResponseWriter, r *http.Request) {
 		srv.log.Printf("[ERROR] %s\n", msg)
 		srv.sendErrorMessage(w, msg)
 		return
+	} else if updates, err = db.UpdatesGetRecent(); err != nil {
+		msg = fmt.Sprintf("Failed to load pending updates: %s",
+			err.Error())
+		srv.log.Printf("[ERROR] %s\n", msg)
+		srv.sendErrorMessage(w, msg)
+		return
+	}
+
+	data.Updates = make(map[int64]*model.Updates, len(updates))
+
+	for _, upd := range updates {
+		data.Updates[upd.DevID] = upd
 	}
 
 	if tmpl = srv.tmpl.Lookup(tmplName); tmpl == nil {

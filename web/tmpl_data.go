@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 06. 05. 2020 by Benjamin Walkenhorst
 // (c) 2020 Benjamin Walkenhorst
-// Time-stamp: <2025-08-08 18:54:24 krylon>
+// Time-stamp: <2025-08-23 17:04:32 krylon>
 //
 // This file contains data structures to be passed to HTML templates.
 
@@ -38,6 +38,7 @@ type tmplDataNetworkDetails struct {
 type tmplDataDeviceAll struct {
 	tmplDataBase
 	Devices []*model.Device
+	Updates map[int64]*model.Updates
 }
 
 type tmplDataDeviceDetails struct {
