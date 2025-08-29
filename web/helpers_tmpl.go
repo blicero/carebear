@@ -55,6 +55,7 @@ var funcmap = template.FuncMap{
 	"truncate":         truncateHTML,
 	"intRange":         intRange,
 	"inc":              inc,
+	"since":            since,
 }
 
 type generator struct {
@@ -310,3 +311,7 @@ func intRange(n int64) []int64 {
 func inc(n int64) int64 {
 	return n + 1
 } // func inc(n int64) int64
+
+func since(t time.Time) string {
+	return time.Since(t).Truncate(time.Second).String()
+}
