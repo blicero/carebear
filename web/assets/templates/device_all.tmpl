@@ -1,71 +1,71 @@
 {{ define "device_all" }}
 {{/* Created on 10. 06. 2024 */}}
-{{/* Time-stamp: <2025-08-26 15:10:26 krylon> */}}
+{{/* Time-stamp: <2025-08-29 18:20:52 krylon> */}}
 <!DOCTYPE html>
 <html>
-  {{ template "head" . }}
+    {{ template "head" . }}
 
-  <body>
-    {{ template "intro" . }}
+    <body>
+        {{ template "intro" . }}
 
-    {{/*
-      <div id="form_device" class="container-fluid">
-      {{ template "device_form" . }}
-      </div>
-      */}}
+        {{/*
+        <div id="form_device" class="container-fluid">
+        {{ template "device_form" . }}
+        </div>
+        */}}
 
-    <hr />
+        <hr />
 
-    <hr />
+        <hr />
 
-    <div class="container-fluid" id="device-list">
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Address</th>
-            <th>OS</th>
-            <th>BigHead</th>
-            <th>Last Contact</th>
-          </tr>
-        </thead>
+        <div class="container-fluid" id="device-list">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Address</th>
+                        <th>OS</th>
+                        <th>BigHead</th>
+                        <th>Last Contact</th>
+                    </tr>
+                </thead>
 
-        <tbody>
-          {{ $umap := .Updates }}
-          {{ range .Devices }}
-          {{ $updates := index $umap .ID }}
-          <tr {{ if .IsLive -}} class="online"{{ end }}>
-            <td>{{ .ID }}</td>
-            <td>
-              <a href="/device/{{ .ID }}">
-                {{ .Name }}{{ if .IsLive }} <img src="/static/green_button.png"
-                                                 width="24"
-                                                 height="24" />{{ end }}
-              </a>
-            </td>
-            <td>{{ .Addr }}</td>
-            <td>
-              {{ .OS }}
-              {{ if ne $updates nil }}
-              <img src="/static/software-update-available.png"
-                   width="24"
-                   height="24" />
-              {{ end -}}
-            </td>
-            <td>
-              <img src="/static/face-{{- if .BigHead -}}glasses{{- else -}}tired{{- end -}}.png"
-                   width="24"
-                   height="24" />
-            </td>
-            <td>{{ fmt_time .LastSeen }}</td>
-          </tr>
-          {{ end }}
-        </tbody>
-      </table>
-    </div>
+                <tbody>
+                    {{ $umap := .Updates }}
+                    {{ range .Devices }}
+                    {{ $updates := index $umap .ID }}
+                    <tr {{ if .IsLive -}} class="online"{{ end }}>
+                        <td>{{ .ID }}</td>
+                        <td>
+                            <a href="/device/{{ .ID }}">
+                                {{ .Name }}{{ if .IsLive }} <img src="/static/green_button.png"
+                                                                 width="24"
+                                                                 height="24" />{{ end }}
+                            </a>
+                        </td>
+                        <td>{{ .Addr }}</td>
+                        <td>
+                            {{ .OS }}
+                            {{ if $updates.UpdatesPending }}
+                            <img src="/static/software-update-available.png"
+                                 width="24"
+                                 height="24" />
+                            {{ end -}}
+                        </td>
+                        <td>
+                            <img src="/static/face-{{- if .BigHead -}}glasses{{- else -}}tired{{- end -}}.png"
+                                 width="24"
+                                 height="24" />
+                        </td>
+                        <td>{{ fmt_time .LastSeen }}</td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
 
-    {{ template "footer" . }}
-  </body>
+        {{ template "footer" . }}
+    </body>
 </html>
 {{ end }}

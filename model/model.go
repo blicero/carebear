@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-09 16:56:31 krylon>
+// Time-stamp: <2025-08-29 18:20:38 krylon>
 
 // Package model provides data types used throughout the application.
 package model
@@ -120,6 +120,12 @@ type Updates struct {
 	Timestamp        time.Time
 	AvailableUpdates []string
 }
+
+// UpdatesPending returns true if the list of AvailableUpdates contains at
+// least one element.
+func (up *Updates) UpdatesPending() bool {
+	return (up != nil) && (len(up.AvailableUpdates) > 0)
+} // func (up *Updates) UpdatesPending() bool
 
 // For posterity, I leave this commented out without removing it:
 // http://play.golang.org/p/m8TNTtygK0
