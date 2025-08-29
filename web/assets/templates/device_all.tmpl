@@ -1,6 +1,6 @@
 {{ define "device_all" }}
 {{/* Created on 10. 06. 2024 */}}
-{{/* Time-stamp: <2025-08-29 18:20:52 krylon> */}}
+{{/* Time-stamp: <2025-08-29 20:17:55 krylon> */}}
 <!DOCTYPE html>
 <html>
     {{ template "head" . }}
@@ -58,7 +58,8 @@
                                  width="24"
                                  height="24" />
                         </td>
-                        <td>{{ fmt_time .LastSeen }}</td>
+                        <td> {{ since .LastSeen }} <small>({{ fmt_time .LastSeen }})</small>
+                        </td>
                     </tr>
                     {{ end }}
                 </tbody>

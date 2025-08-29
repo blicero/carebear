@@ -1,6 +1,6 @@
 {{ define "device_details" }}
 {{/* Created on 10. 06. 2024 */}}
-{{/* Time-stamp: <2025-08-20 18:07:02 krylon> */}}
+{{/* Time-stamp: <2025-08-29 20:14:34 krylon> */}}
 <!DOCTYPE html>
 <html>
     {{ template "head" . }}
@@ -69,7 +69,8 @@
             {{ if ne .Updates nil }}
             <h2>Pending Updates</h2>
 
-            Last checked {{ fmt_time .Updates.Timestamp }}
+            Last checked {{ since .Updates.Timestamp }} ago
+            ({{ fmt_time .Updates.Timestamp }})
 
             <table class="table table-striped output">
                 {{ range .Updates.AvailableUpdates }}
