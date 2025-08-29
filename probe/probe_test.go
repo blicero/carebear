@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 24. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-26 16:41:13 krylon>
+// Time-stamp: <2025-08-29 19:19:34 krylon>
 
 package probe
 
@@ -70,3 +70,20 @@ func TestUptimePattern(t *testing.T) {
 		}
 	}
 } // func TestUptimePattern(t *testing.T)
+
+func TestUpdatePatterns(t *testing.T) {
+	var sampleOutputArch = []string{
+		"liburing 2.11-1 -> 2.12-1",
+		"linux 6.16.3.arch1-1 -> 6.16.4.arch1-1",
+		"pcre2 10.45-1 -> 10.46-1",
+		"python-trove-classifiers 2025.8.6.13-1 -> 2025.8.26.11-1",
+	}
+
+	for _, u := range sampleOutputArch {
+		var match = patUpdateArch.FindStringSubmatch(u)
+		if len(match) == 0 {
+			t.Errorf("Failed to parse output of checkupdates(8): %s",
+				u)
+		}
+	}
+} // func TestUpdatePatterns(t *testing.T)
