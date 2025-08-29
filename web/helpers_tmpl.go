@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 12. 12. 2018 by Benjamin Walkenhorst
 // (c) 2018 Benjamin Walkenhorst
-// Time-stamp: <2025-07-14 14:36:04 krylon>
+// Time-stamp: <2025-08-29 20:23:46 krylon>
 
 package web
 
@@ -212,11 +212,11 @@ func argString(args []string) string {
 	return strings.Join(qlist, " ")
 } // func argString(args []string) string
 
-func isNil(arg interface{}) bool {
+func isNil(arg any) bool {
 	return arg == nil
 } // func isNil(arg interface{}) bool
 
-func notNil(arg interface{}) bool {
+func notNil(arg any) bool {
 	return arg != nil
 } // func notNil(arg interface{}) bool
 
@@ -260,7 +260,7 @@ func nbsp(cnt int) string {
 
 	bld.Grow(len(entity)*cnt + 2)
 
-	for i := 0; i < cnt; i++ {
+	for range cnt {
 		bld.WriteString(entity) // nolint: errcheck,gosec
 	}
 
@@ -301,7 +301,7 @@ func intRange(n int64) []int64 {
 		list = make([]int64, n)
 	)
 
-	for i = 0; i < n; i++ {
+	for i = range n {
 		list[i] = i
 	}
 
