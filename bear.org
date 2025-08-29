@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2025-08-26 15:26:17 krylon>
+# Time-stamp: <2025-08-29 18:26:43 krylon>
 #+TAGS: internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
 #+TAGS: optimize(o) refactor(r) cleanup(c)
@@ -7,20 +7,20 @@
 #+TODO: MEDITATE(m) PLANNING(p) | SUSPENDED(s)
 #+PRIORITIES: A G D
 
-* Care Bear [17/28]
+* Care Bear [18/29]
   :PROPERTIES:
   :COOKIE_DATA: todo recursive
   :VISIBILITY: children
   :END:
 ** Clocktable
    #+BEGIN: clocktable :scope file :maxlevel 255 :emphasize t
-   #+CAPTION: Clock summary at [2025-08-26 Di 15:26]
+   #+CAPTION: Clock summary at [2025-08-29 Fr 18:26]
    | Headline                                        | Time       |            |          |      |      |      |
    |-------------------------------------------------+------------+------------+----------+------+------+------|
-   | *Total time*                                    | *4d 13:05* |            |          |      |      |      |
+   | *Total time*                                    | *4d 13:36* |            |          |      |      |      |
    |-------------------------------------------------+------------+------------+----------+------+------+------|
-   | *Care Bear [17/28]*                             | *4d 13:05* |            |          |      |      |      |
-   | \_  /Components [17/28]/                        |            | /4d 13:05/ |          |      |      |      |
+   | *Care Bear [18/29]*                             | *4d 13:36* |            |          |      |      |      |
+   | \_  /Components [18/29]/                        |            | /4d 13:36/ |          |      |      |      |
    | \_    Common [3/3]                              |            |            |     0:27 |      |      |      |
    | \_      Make default log level configurable     |            |            |          | 0:06 |      |      |
    | \_      Make all log levels configurable        |            |            |          | 0:15 |      |      |
@@ -45,13 +45,13 @@
    | \_    Settings [2/2]                            |            |            |     5:34 |      |      |      |
    | \_      Integrate Settings into other packages  |            |            |          | 4:54 |      |      |
    | \_        Interval for querying pending updates |            |            |          |      | 3:57 |      |
-   | \_    Web UI [2/3]                              |            |            |     9:25 |      |      |      |
+   | \_    Web UI [3/3]                              |            |            |     9:56 |      |      |      |
    | \_      Add summary to <details>                |            |            |          | 0:01 |      |      |
    | \_      Highlight Devices that are online       |            |            |          | 0:46 |      |      |
    | \_      Present sysload info and updates in UI  |            |            |          | 0:46 |      |      |
-   | \_      Display pending updates                 |            |            |          | 0:51 |      |      |
+   | \_      Display pending updates                 |            |            |          | 1:22 |      |      |
    #+END:
-** Components [17/28]
+** Components [18/29]
    :PROPERTIES:
    :COOKIE_DATA: todo recursive
    :VISIBILITY: children
@@ -259,7 +259,7 @@
       :LOGBOOK:
       CLOCK: [2025-08-07 Do 16:53]--[2025-08-07 Do 20:50] =>  3:57
       :END:
-*** Web UI [2/3]
+*** Web UI [3/3]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
     :VISIBILITY: children
@@ -288,8 +288,10 @@
      :LOGBOOK:
      CLOCK: [2025-08-08 Fr 18:21]--[2025-08-08 Fr 19:07] =>  0:46
      :END:
-**** TODO Display pending updates
+**** DONE Display pending updates
+     CLOSED: [2025-08-29 Fr 18:26]
      :LOGBOOK:
+     CLOCK: [2025-08-29 Fr 17:55]--[2025-08-29 Fr 18:26] =>  0:31
      CLOCK: [2025-08-26 Di 14:35]--[2025-08-26 Di 15:26] =>  0:51
      :END:
 ** Features [0/0]
