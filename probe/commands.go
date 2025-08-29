@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-20 19:05:45 krylon>
+// Time-stamp: <2025-08-29 19:44:16 krylon>
 
 package probe
 
@@ -47,6 +47,8 @@ func (p *Probe) executeCommand(d *model.Device, port int, cmd string) ([]string,
 	if rawOutput, err = session.CombinedOutput(cmd); err != nil {
 		if strings.Contains(cmd, "dnf") && strings.HasPrefix(err.Error(), "Process exited with status 100") {
 			// dnf check-upgrade exits with status 100 if there are updates available.
+		} else if strings.Contains(cmd, "checkupdates") && strings.HasPrefix(err.Error(), "Process exited with status 2") {
+			// checkupdates on Arch exits with status 2 if no updates are available.
 		} else {
 			var ex = fmt.Errorf("Failed to execute command on %s: %w\n>>> Command: %s",
 				d.Name,
@@ -167,6 +169,37 @@ func (p *Probe) QueryUpdatesFedora(d *model.Device, port int) ([]string, error) 
 	return updates, nil
 } // func (p *Probe) QueryUpdatesFedora(d *model.Device, port int) ([]string, error)
 
+var patUpdateArch = regexp.MustCompile(`^(\S+)\s+(\S+)\s+->\s+(\S+)$`)
+
+// QueryUpdatesArch asks an Arch Linux system for a list of pending updates.
+func (p *Probe) QueryUpdatesArch(d *model.Device, port int) ([]string, error) {
+	const cmd = "checkupdates"
+	var (
+		err             error
+		output, updates []string
+	)
+
+	if output, err = p.executeCommand(d, port, cmd); err != nil {
+		if err == ErrPingOffline {
+			return nil, err
+		}
+		_ = p.disconnect(d)
+		return nil, err
+	}
+
+	updates = make([]string, 0)
+
+	for _, l := range output {
+		var match []string
+		if match = patUpdateArch.FindStringSubmatch(l); len(match) > 0 {
+			var upd = strings.Join(match[1:], pkgSep)
+			updates = append(updates, upd)
+		}
+	}
+
+	return updates, nil
+} // func (p *Probe) QueryUpdatesArch(d *model.Device, port int) ([]string, error)
+
 // QueryUpdates attempts to query the given Device for available updates.
 func (p *Probe) QueryUpdates(d *model.Device, port int) ([]string, error) {
 	switch d.OS {
@@ -180,6 +213,8 @@ func (p *Probe) QueryUpdates(d *model.Device, port int) ([]string, error) {
 		return p.QueryUpdatesSuse(d, port)
 	case "Fedora Linux":
 		return p.QueryUpdatesFedora(d, port)
+	case "Arch Linux":
+		return p.QueryUpdatesArch(d, port)
 	default:
 		p.log.Printf("[TRACE] Don't know how to query %s (running %s) for updates\n",
 			d.Name,
