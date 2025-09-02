@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-29 19:44:16 krylon>
+// Time-stamp: <2025-09-02 15:15:10 krylon>
 
 package probe
 
@@ -200,6 +200,27 @@ func (p *Probe) QueryUpdatesArch(d *model.Device, port int) ([]string, error) {
 	return updates, nil
 } // func (p *Probe) QueryUpdatesArch(d *model.Device, port int) ([]string, error)
 
+// QueryUpdatesOpenBSD checks for available updates on OpenBSD.
+func (p *Probe) QueryUpdatesOpenBSD(d *model.Device, port int) ([]string, error) {
+	const cmd = "syspatch -c"
+	var (
+		err    error
+		output []string
+	)
+
+	if output, err = p.executeCommand(d, port, cmd); err != nil {
+		if err == ErrPingOffline {
+			return nil, err
+		}
+		_ = p.disconnect(d)
+		return nil, err
+	} else if len(output) == 0 {
+		return nil, nil
+	}
+
+	return output, nil
+} // func (p *Probe) QueryUpdatesOpenBSD(d *model.Device, port int) ([]string, error)
+
 // QueryUpdates attempts to query the given Device for available updates.
 func (p *Probe) QueryUpdates(d *model.Device, port int) ([]string, error) {
 	switch d.OS {
@@ -215,11 +236,13 @@ func (p *Probe) QueryUpdates(d *model.Device, port int) ([]string, error) {
 		return p.QueryUpdatesFedora(d, port)
 	case "Arch Linux":
 		return p.QueryUpdatesArch(d, port)
+	case "OpenBSD":
+		return p.QueryUpdatesOpenBSD(d, port)
 	default:
 		p.log.Printf("[TRACE] Don't know how to query %s (running %s) for updates\n",
 			d.Name,
 			d.OS)
-		return []string{}, nil
+		return nil, nil
 	}
 } // func (p *Probe) QueryUpdates(d *model.Device, port int) ([]string, error)
 
