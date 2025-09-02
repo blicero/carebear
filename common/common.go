@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 07. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2025-08-20 21:13:57 krylon>
+// Time-stamp: <2025-09-02 15:31:02 krylon>
 
 // Package common contains definitions used throughout the application
 package common
@@ -35,7 +35,7 @@ import (
 // application.
 const (
 	AppName                  = "CareBear"
-	Version                  = "0.0.1"
+	Version                  = "0.1.0"
 	Debug                    = true
 	DefaultPort              = 3819
 	TimestampFormatMinute    = "2006-01-02 15:04"
