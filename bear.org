@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2025-08-29 21:33:27 krylon>
+# Time-stamp: <2025-09-02 15:30:49 krylon>
 #+TAGS: internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
 #+TAGS: optimize(o) refactor(r) cleanup(c)
@@ -7,20 +7,20 @@
 #+TODO: MEDITATE(m) PLANNING(p) | SUSPENDED(s)
 #+PRIORITIES: A G D
 
-* Care Bear [18/29]
+* Care Bear [19/29]
   :PROPERTIES:
   :COOKIE_DATA: todo recursive
   :VISIBILITY: children
   :END:
 ** Clocktable
    #+BEGIN: clocktable :scope file :maxlevel 255 :emphasize t
-   #+CAPTION: Clock summary at [2025-08-29 Fr 21:33]
+   #+CAPTION: Clock summary at [2025-09-02 Di 15:30]
    | Headline                                        | Time       |            |          |      |      |      |
    |-------------------------------------------------+------------+------------+----------+------+------+------|
-   | *Total time*                                    | *4d 16:23* |            |          |      |      |      |
+   | *Total time*                                    | *4d 16:42* |            |          |      |      |      |
    |-------------------------------------------------+------------+------------+----------+------+------+------|
-   | *Care Bear [18/29]*                             | *4d 16:23* |            |          |      |      |      |
-   | \_  /Components [18/29]/                        |            | /4d 16:23/ |          |      |      |      |
+   | *Care Bear [19/29]*                             | *4d 16:42* |            |          |      |      |      |
+   | \_  /Components [19/29]/                        |            | /4d 16:42/ |          |      |      |      |
    | \_    Common [3/3]                              |            |            |     0:27 |      |      |      |
    | \_      Make default log level configurable     |            |            |          | 0:06 |      |      |
    | \_      Make all log levels configurable        |            |            |          | 0:15 |      |      |
@@ -35,11 +35,12 @@
    | \_      Make progress of scan more visible      |            |            |          | 1:28 |      |      |
    | \_      Make number of workers configurable     |            |            |          | 0:24 |      |      |
    | \_      Detect new devices?                     |            |            |          | 2:00 |      |      |
-   | \_    Probe [2/13]                              |            |            |    15:15 |      |      |      |
-   | \_      Implement commands [0/10]               |            |            |          | 4:43 |      |      |
-   | \_        Available updates [0/6]               |            |            |          |      | 4:43 |      |
+   | \_    Probe [3/13]                              |            |            |    15:34 |      |      |      |
+   | \_      Implement commands [1/10]               |            |            |          | 5:02 |      |      |
+   | \_        Available updates [1/6]               |            |            |          |      | 5:02 |      |
    | \_          Debian                              |            |            |          |      |      | 0:18 |
    | \_          openSUSE                            |            |            |          |      |      | 0:53 |
+   | \_          OpenBSD                             |            |            |          |      |      | 0:19 |
    | \_          Arch                                |            |            |          |      |      | 0:49 |
    | \_    Scheduler [1/1]                           |            |            | 2d 10:13 |      |      |      |
    | \_      Ping Device before probing              |            |            |          | 2:17 |      |      |
@@ -52,7 +53,7 @@
    | \_      Present sysload info and updates in UI  |            |            |          | 0:46 |      |      |
    | \_      Display pending updates                 |            |            |          | 1:22 |      |      |
    #+END:
-** Components [18/29]
+** Components [19/29]
    :PROPERTIES:
    :COOKIE_DATA: todo recursive
    :VISIBILITY: children
@@ -164,7 +165,7 @@
      *big facepalm time here* -- The problem was that I had forgotten to
      /start/ the Scanner from the Scheduler. So the Scheduler would send these
      commands, but with the Scanner inert, nothing happened. 🤦
-*** Probe [2/13]
+*** Probe [3/13]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
     :VISIBILITY: children
@@ -179,12 +180,12 @@
     CLOCK: [2025-07-22 Di 14:23]--[2025-07-22 Di 15:35] =>  1:12
     CLOCK: [2025-07-21 Mo 15:40]--[2025-07-21 Mo 17:54] =>  2:14
     :END:
-**** Implement commands [0/10]
+**** Implement commands [1/10]
      :PROPERTIES:
      :COOKIE_DATA: todo recursive
      :VISIBILITY: children
      :END:
-***** TODO Available updates [0/6]
+***** TODO Available updates [1/6]
       :PROPERTIES:
       :COOKIE_DATA: todo recursive
       :VISIBILITY: children
@@ -208,7 +209,11 @@
        :END:
 ****** TEST Fedora
 ****** TODO FreeBSD
-****** TODO OpenBSD
+****** DONE OpenBSD
+       CLOSED: [2025-09-02 Di 15:30]
+       :LOGBOOK:
+       CLOCK: [2025-09-02 Di 15:11]--[2025-09-02 Di 15:30] =>  0:19
+       :END:
 ****** TEST Arch
        :LOGBOOK:
        CLOCK: [2025-08-29 Fr 18:35]--[2025-08-29 Fr 19:24] =>  0:49
