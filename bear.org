@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2025-09-02 15:30:49 krylon>
+# Time-stamp: <2025-09-02 15:34:36 krylon>
 #+TAGS: internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
 #+TAGS: optimize(o) refactor(r) cleanup(c)
@@ -185,7 +185,7 @@
      :COOKIE_DATA: todo recursive
      :VISIBILITY: children
      :END:
-***** TODO Available updates [1/6]
+***** TODO Available updates [5/6]
       :PROPERTIES:
       :COOKIE_DATA: todo recursive
       :VISIBILITY: children
@@ -199,25 +199,30 @@
       :END:
       Querying for available updates can be rather time-consuming, I should
       introduce a separate interval for this.
-****** TEST Debian
+****** DONE Debian
+       CLOSED: [2025-09-02 Di 15:33]
        :LOGBOOK:
        CLOCK: [2025-08-20 Mi 17:49]--[2025-08-20 Mi 18:07] =>  0:18
        :END:
-****** TEST openSUSE
+****** DONE openSUSE
+       CLOSED: [2025-09-02 Di 15:33]
        :LOGBOOK:
        CLOCK: [2025-08-20 Mi 18:16]--[2025-08-20 Mi 19:09] =>  0:53
        :END:
-****** TEST Fedora
+****** DONE Fedora
+       CLOSED: [2025-09-02 Di 15:34]
 ****** TODO FreeBSD
 ****** DONE OpenBSD
        CLOSED: [2025-09-02 Di 15:30]
        :LOGBOOK:
        CLOCK: [2025-09-02 Di 15:11]--[2025-09-02 Di 15:30] =>  0:19
        :END:
-****** TEST Arch
+****** DONE Arch
+       CLOSED: [2025-09-02 Di 15:34]
        :LOGBOOK:
        CLOCK: [2025-08-29 Fr 18:35]--[2025-08-29 Fr 19:24] =>  0:49
        :END:
+       *Caveat* - this requires the package pacman-contrib to be installed.
 ***** TODO Free disk space
 ***** MEDITATE Temperature?
 ***** MEDITATE Needs reboot?
