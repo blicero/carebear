@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-09-02 15:15:10 krylon>
+// Time-stamp: <2025-09-02 16:10:31 krylon>
 
 package probe
 
@@ -200,12 +200,14 @@ func (p *Probe) QueryUpdatesArch(d *model.Device, port int) ([]string, error) {
 	return updates, nil
 } // func (p *Probe) QueryUpdatesArch(d *model.Device, port int) ([]string, error)
 
+var patUpdateOpenBSD = regexp.MustCompile(`\w+`)
+
 // QueryUpdatesOpenBSD checks for available updates on OpenBSD.
 func (p *Probe) QueryUpdatesOpenBSD(d *model.Device, port int) ([]string, error) {
-	const cmd = "syspatch -c"
+	const cmd = "doas syspatch -c"
 	var (
-		err    error
-		output []string
+		err             error
+		output, updates []string
 	)
 
 	if output, err = p.executeCommand(d, port, cmd); err != nil {
@@ -214,11 +216,21 @@ func (p *Probe) QueryUpdatesOpenBSD(d *model.Device, port int) ([]string, error)
 		}
 		_ = p.disconnect(d)
 		return nil, err
-	} else if len(output) == 0 {
+	}
+
+	updates = make([]string, 0, len(output))
+
+	for _, l := range output {
+		if patUpdateOpenBSD.MatchString(l) {
+			updates = append(updates, l)
+		}
+	}
+
+	if len(updates) == 0 {
 		return nil, nil
 	}
 
-	return output, nil
+	return updates, nil
 } // func (p *Probe) QueryUpdatesOpenBSD(d *model.Device, port int) ([]string, error)
 
 // QueryUpdates attempts to query the given Device for available updates.
