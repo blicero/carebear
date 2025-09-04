@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-09-03 19:20:26 krylon>
+// Time-stamp: <2025-09-04 18:46:33 krylon>
 
 package scanner
 
@@ -27,8 +27,6 @@ import (
 //
 //	Better yet, make it configurable!
 const (
-	pingCount      = 4
-	pingInterval   = time.Millisecond * 250
 	defaultTimeout = time.Second * 5
 	ckPeriod       = time.Second * 5
 )
@@ -37,10 +35,11 @@ var (
 	netScanPeriod time.Duration = time.Minute * 10
 )
 
-type scanProgress struct {
-	n       *model.Network
-	scanned atomic.Uint64
-	added   atomic.Uint64
+// ScanProgress represents the progress of a given Network scan.
+type ScanProgress struct {
+	Net     *model.Network
+	Scanned atomic.Uint64
+	Added   atomic.Uint64
 }
 
 // NetworkScanner traverses IP networks looking for Devices.
@@ -50,7 +49,7 @@ type NetworkScanner struct {
 	CmdQ       chan command.Command
 	activeFlag atomic.Bool
 	db         *database.Database
-	scanMap    map[int64]*scanProgress
+	scanMap    map[int64]*ScanProgress
 	workerCnt  int64
 	timeout    time.Duration
 	pp         *ping.Pinger
@@ -62,7 +61,7 @@ func NewNetworkScanner() (*NetworkScanner, error) {
 		err error
 		s   = &NetworkScanner{
 			CmdQ:    make(chan command.Command),
-			scanMap: make(map[int64]*scanProgress),
+			scanMap: make(map[int64]*ScanProgress),
 			timeout: defaultTimeout,
 		}
 	)
@@ -124,7 +123,7 @@ func (s *NetworkScanner) ScanProgress(nid int64) (uint64, uint64, bool) {
 
 	var (
 		ok              bool
-		prog            *scanProgress
+		prog            *ScanProgress
 		scanCnt, addCnt uint64
 	)
 
@@ -132,8 +131,8 @@ func (s *NetworkScanner) ScanProgress(nid int64) (uint64, uint64, bool) {
 		return 0, 0, false
 	}
 
-	scanCnt = prog.scanned.Load()
-	addCnt = prog.added.Load()
+	scanCnt = prog.Scanned.Load()
+	addCnt = prog.Added.Load()
 
 	return scanCnt, addCnt, true
 } // func (s *Scanner) ScanProgress(nid int64) (uint64, uint64, bool)
@@ -215,7 +214,7 @@ func (s *NetworkScanner) scanStart(n *model.Network) {
 		n.ID,
 		n.Addr)
 
-	s.scanMap[n.ID] = &scanProgress{n: n}
+	s.scanMap[n.ID] = &ScanProgress{Net: n}
 	s.lock.Unlock()
 
 	defer func() {
@@ -250,6 +249,24 @@ func (s *NetworkScanner) scanStart(n *model.Network) {
 	wg.Wait()
 	close(devQ)
 
+	var db *database.Database
+
+	if db, err = database.DBPool.GetNoWait(); err != nil {
+		s.log.Printf("[ERROR] Cannot open database at %s: %s\n",
+			common.DbPath,
+			err.Error())
+		return
+	}
+
+	defer database.DBPool.Put(db)
+
+	if err = db.NetworkUpdateScanStamp(n, time.Now()); err != nil {
+		s.log.Printf("[ERROR] Failed to update timestamp on Network %d (%s): %s\n",
+			n.ID,
+			n.Addr,
+			err.Error())
+	}
+
 	s.log.Printf("[INFO] Scan of network %s has concluded\n",
 		n.Addr)
 } // func (s *Scanner) scanStart(n *model.Network)
@@ -262,7 +279,7 @@ func (s *NetworkScanner) netScanWorker(nid, wid int64, addrQ <-chan net.IP, devQ
 	var prog = s.scanMap[nid]
 
 	for addr := range addrQ {
-		prog.scanned.Add(1)
+		prog.Scanned.Add(1)
 		if s.pp.PingAddr(addr.String()) {
 			var (
 				err   error
@@ -292,7 +309,7 @@ func (s *NetworkScanner) netScanWorker(nid, wid int64, addrQ <-chan net.IP, devQ
 			}
 
 			devQ <- dev
-			prog.added.Add(1)
+			prog.Added.Add(1)
 		}
 	}
 } // func (s *Scanner) netScanWorker(id int, addrQ <-chan net.IP, wg *sync.WaitGroup)
