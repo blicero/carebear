@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-29 18:20:38 krylon>
+// Time-stamp: <2025-09-03 19:16:29 krylon>
 
 // Package model provides data types used throughout the application.
 package model
@@ -49,7 +49,9 @@ func (n *Network) Enumerate(q chan<- net.IP) error {
 
 	go func() {
 		for ip := gen.Next(); ip != nil; ip = gen.Next() {
-			q <- ip
+			if !ip.IsMulticast() {
+				q <- ip
+			}
 		}
 		close(q)
 	}()
