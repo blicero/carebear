@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-09-02 16:10:31 krylon>
+// Time-stamp: <2025-09-04 18:04:34 krylon>
 
 package probe
 
@@ -49,6 +49,10 @@ func (p *Probe) executeCommand(d *model.Device, port int, cmd string) ([]string,
 			// dnf check-upgrade exits with status 100 if there are updates available.
 		} else if strings.Contains(cmd, "checkupdates") && strings.HasPrefix(err.Error(), "Process exited with status 2") {
 			// checkupdates on Arch exits with status 2 if no updates are available.
+			return nil, nil
+		} else if d.OS == "FreeBSD" && strings.HasPrefix(err.Error(), "Process exited with status 2") {
+			// On FreeBSD, "freebsd-update updatesready" exits with status 2 if no updates are available.
+			return nil, nil
 		} else {
 			var ex = fmt.Errorf("Failed to execute command on %s: %w\n>>> Command: %s",
 				d.Name,
@@ -233,6 +237,36 @@ func (p *Probe) QueryUpdatesOpenBSD(d *model.Device, port int) ([]string, error)
 	return updates, nil
 } // func (p *Probe) QueryUpdatesOpenBSD(d *model.Device, port int) ([]string, error)
 
+func (p *Probe) QueryUpdatesFreeBSD(d *model.Device, port int) ([]string, error) {
+	const cmd = "doas freebsd-update updatesready"
+	var (
+		err             error
+		output, updates []string
+	)
+
+	if output, err = p.executeCommand(d, port, cmd); err != nil {
+		if err == ErrPingOffline {
+			return nil, err
+		}
+		_ = p.disconnect(d)
+		return nil, err
+	}
+
+	updates = make([]string, 0, len(output))
+
+	for _, l := range output {
+		if patUpdateOpenBSD.MatchString(l) {
+			updates = append(updates, l)
+		}
+	}
+
+	if len(updates) == 0 {
+		return nil, nil
+	}
+
+	return updates, nil
+} // func (p *Probe) QueryUpdatesFreeBSD(d *model.Device, port int) ([]string, error)
+
 // QueryUpdates attempts to query the given Device for available updates.
 func (p *Probe) QueryUpdates(d *model.Device, port int) ([]string, error) {
 	switch d.OS {
@@ -250,6 +284,8 @@ func (p *Probe) QueryUpdates(d *model.Device, port int) ([]string, error) {
 		return p.QueryUpdatesArch(d, port)
 	case "OpenBSD":
 		return p.QueryUpdatesOpenBSD(d, port)
+	case "FreeBSD":
+		return p.QueryUpdatesFreeBSD(d, port)
 	default:
 		p.log.Printf("[TRACE] Don't know how to query %s (running %s) for updates\n",
 			d.Name,
