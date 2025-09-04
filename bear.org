@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2025-09-02 15:34:36 krylon>
+# Time-stamp: <2025-09-04 18:12:46 krylon>
 #+TAGS: internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
 #+TAGS: optimize(o) refactor(r) cleanup(c)
@@ -7,20 +7,20 @@
 #+TODO: MEDITATE(m) PLANNING(p) | SUSPENDED(s)
 #+PRIORITIES: A G D
 
-* Care Bear [19/29]
+* Care Bear [24/30]
   :PROPERTIES:
   :COOKIE_DATA: todo recursive
   :VISIBILITY: children
   :END:
 ** Clocktable
    #+BEGIN: clocktable :scope file :maxlevel 255 :emphasize t
-   #+CAPTION: Clock summary at [2025-09-02 Di 15:30]
+   #+CAPTION: Clock summary at [2025-09-04 Do 18:12]
    | Headline                                        | Time       |            |          |      |      |      |
    |-------------------------------------------------+------------+------------+----------+------+------+------|
-   | *Total time*                                    | *4d 16:42* |            |          |      |      |      |
+   | *Total time*                                    | *4d 18:03* |            |          |      |      |      |
    |-------------------------------------------------+------------+------------+----------+------+------+------|
-   | *Care Bear [19/29]*                             | *4d 16:42* |            |          |      |      |      |
-   | \_  /Components [19/29]/                        |            | /4d 16:42/ |          |      |      |      |
+   | *Care Bear [24/30]*                             | *4d 18:03* |            |          |      |      |      |
+   | \_  /Components [24/29]/                        |            | /4d 17:11/ |          |      |      |      |
    | \_    Common [3/3]                              |            |            |     0:27 |      |      |      |
    | \_      Make default log level configurable     |            |            |          | 0:06 |      |      |
    | \_      Make all log levels configurable        |            |            |          | 0:15 |      |      |
@@ -30,16 +30,17 @@
    | \_    Database [2/2]                            |            |            |     7:32 |      |      |      |
    | \_      Extend schema                           |            |            |          | 2:10 |      |      |
    | \_      Make connection pool global             |            |            |          | 0:41 |      |      |
-   | \_    Scanner [4/4]                             |            |            |    12:48 |      |      |      |
+   | \_    Scanner [4/5]                             |            |            |    12:48 |      |      |      |
    | \_      Add a way to scan a specific network    |            |            |          | 0:53 |      |      |
    | \_      Make progress of scan more visible      |            |            |          | 1:28 |      |      |
    | \_      Make number of workers configurable     |            |            |          | 0:24 |      |      |
    | \_      Detect new devices?                     |            |            |          | 2:00 |      |      |
-   | \_    Probe [3/13]                              |            |            |    15:34 |      |      |      |
-   | \_      Implement commands [1/10]               |            |            |          | 5:02 |      |      |
-   | \_        Available updates [1/6]               |            |            |          |      | 5:02 |      |
+   | \_    Probe [8/13]                              |            |            |    16:03 |      |      |      |
+   | \_      Implement commands [6/10]               |            |            |          | 5:31 |      |      |
+   | \_        Available updates [6/6]               |            |            |          |      | 5:31 |      |
    | \_          Debian                              |            |            |          |      |      | 0:18 |
    | \_          openSUSE                            |            |            |          |      |      | 0:53 |
+   | \_          FreeBSD                             |            |            |          |      |      | 0:29 |
    | \_          OpenBSD                             |            |            |          |      |      | 0:19 |
    | \_          Arch                                |            |            |          |      |      | 0:49 |
    | \_    Scheduler [1/1]                           |            |            | 2d 10:13 |      |      |      |
@@ -52,8 +53,10 @@
    | \_      Highlight Devices that are online       |            |            |          | 0:46 |      |      |
    | \_      Present sysload info and updates in UI  |            |            |          | 0:46 |      |      |
    | \_      Display pending updates                 |            |            |          | 1:22 |      |      |
+   | \_  /Bugs [0/1]/                                |            | /0:52/     |          |      |      |      |
+   | \_    Make scanner skip broadcast address...    |            |            |     0:52 |      |      |      |
    #+END:
-** Components [19/29]
+** Components [24/29]
    :PROPERTIES:
    :COOKIE_DATA: todo recursive
    :VISIBILITY: children
@@ -119,7 +122,7 @@
      :END:
      The log file reveals lots of connections being opened, probably (my gut
      feeling says) more than are really needed.
-*** Scanner [4/4]
+*** Scanner [4/5]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
     :VISIBILITY: children
@@ -165,7 +168,7 @@
      *big facepalm time here* -- The problem was that I had forgotten to
      /start/ the Scanner from the Scheduler. So the Scheduler would send these
      commands, but with the Scanner inert, nothing happened. 🤦
-*** Probe [3/13]
+*** Probe [8/13]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
     :VISIBILITY: children
@@ -180,12 +183,12 @@
     CLOCK: [2025-07-22 Di 14:23]--[2025-07-22 Di 15:35] =>  1:12
     CLOCK: [2025-07-21 Mo 15:40]--[2025-07-21 Mo 17:54] =>  2:14
     :END:
-**** Implement commands [1/10]
+**** Implement commands [6/10]
      :PROPERTIES:
      :COOKIE_DATA: todo recursive
      :VISIBILITY: children
      :END:
-***** TODO Available updates [5/6]
+***** TODO Available updates [6/6]
       :PROPERTIES:
       :COOKIE_DATA: todo recursive
       :VISIBILITY: children
@@ -211,7 +214,11 @@
        :END:
 ****** DONE Fedora
        CLOSED: [2025-09-02 Di 15:34]
-****** TODO FreeBSD
+****** DONE FreeBSD
+       CLOSED: [2025-09-04 Do 18:12]
+       :LOGBOOK:
+       CLOCK: [2025-09-04 Do 17:43]--[2025-09-04 Do 18:12] =>  0:29
+       :END:
 ****** DONE OpenBSD
        CLOSED: [2025-09-02 Di 15:30]
        :LOGBOOK:
@@ -310,4 +317,9 @@
      CLOCK: [2025-08-26 Di 14:35]--[2025-08-26 Di 15:26] =>  0:51
      :END:
 ** Features [0/0]
-** Bugs [0/0]
+** Bugs [0/1]
+*** TODO Make scanner skip broadcast address in IPv4 networks
+    :LOGBOOK:
+    CLOCK: [2025-09-03 Mi 18:33]--[2025-09-03 Mi 19:25] =>  0:52
+    :END:
+
