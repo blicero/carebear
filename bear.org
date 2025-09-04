@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2025-09-04 18:23:24 krylon>
+# Time-stamp: <2025-09-04 19:54:19 krylon>
 #+TAGS: internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
 #+TAGS: optimize(o) refactor(r) cleanup(c)
@@ -7,19 +7,19 @@
 #+TODO: MEDITATE(m) PLANNING(p) | SUSPENDED(s)
 #+PRIORITIES: A G D
 
-* Care Bear [25/30]
+* Care Bear [26/31]
   :PROPERTIES:
   :COOKIE_DATA: todo recursive
   :VISIBILITY: children
   :END:
 ** Clocktable
    #+BEGIN: clocktable :scope file :maxlevel 255 :emphasize t
-   #+CAPTION: Clock summary at [2025-09-04 Do 18:23]
+   #+CAPTION: Clock summary at [2025-09-04 Do 19:54]
    | Headline                                        | Time       |            |          |      |      |      |
    |-------------------------------------------------+------------+------------+----------+------+------+------|
    | *Total time*                                    | *4d 18:03* |            |          |      |      |      |
    |-------------------------------------------------+------------+------------+----------+------+------+------|
-   | *Care Bear [25/30]*                             | *4d 18:03* |            |          |      |      |      |
+   | *Care Bear [26/31]*                             | *4d 18:03* |            |          |      |      |      |
    | \_  /Components [25/29]/                        |            | /4d 17:11/ |          |      |      |      |
    | \_    Common [3/3]                              |            |            |     0:27 |      |      |      |
    | \_      Make default log level configurable     |            |            |          | 0:06 |      |      |
@@ -48,12 +48,12 @@
    | \_    Settings [2/2]                            |            |            |     5:34 |      |      |      |
    | \_      Integrate Settings into other packages  |            |            |          | 4:54 |      |      |
    | \_        Interval for querying pending updates |            |            |          |      | 3:57 |      |
-   | \_    Web UI [3/3]                              |            |            |    11:54 |      |      |      |
+   | \_    Web UI [3/4]                              |            |            |    11:54 |      |      |      |
    | \_      Add summary to <details>                |            |            |          | 0:01 |      |      |
    | \_      Highlight Devices that are online       |            |            |          | 0:46 |      |      |
    | \_      Present sysload info and updates in UI  |            |            |          | 0:46 |      |      |
    | \_      Display pending updates                 |            |            |          | 1:22 |      |      |
-   | \_  /Bugs [0/1]/                                |            | /0:52/     |          |      |      |      |
+   | \_  /Bugs [1/1]/                                |            | /0:52/     |          |      |      |      |
    | \_    Make scanner skip broadcast address...    |            |            |     0:52 |      |      |      |
    #+END:
 ** Components [25/29]
@@ -128,6 +128,7 @@
     :VISIBILITY: children
     :END:
     :LOGBOOK:
+    CLOCK: [2025-09-04 Do 18:38]
     CLOCK: [2025-07-30 Mi 17:37]--[2025-07-30 Mi 17:37] =>  0:00
     CLOCK: [2025-07-12 Sa 17:13]--[2025-07-12 Sa 18:10] =>  0:57
     CLOCK: [2025-07-11 Fr 15:19]--[2025-07-11 Fr 17:21] =>  2:02
@@ -281,7 +282,7 @@
       :LOGBOOK:
       CLOCK: [2025-08-07 Do 16:53]--[2025-08-07 Do 20:50] =>  3:57
       :END:
-*** Web UI [3/3]
+*** Web UI [3/4]
     :PROPERTIES:
     :COOKIE_DATA: todo recursive
     :VISIBILITY: children
@@ -297,6 +298,7 @@
     CLOCK: [2025-07-14 Mo 16:25]--[2025-07-14 Mo 17:04] =>  0:39
     CLOCK: [2025-07-14 Mo 14:26]--[2025-07-14 Mo 16:18] =>  1:52
     :END:
+**** TODO Display more activity in web interface
 **** Add summary to <details>
      :LOGBOOK:
      CLOCK: [2025-08-20 Mi 18:07]--[2025-08-20 Mi 18:08] =>  0:01
@@ -318,8 +320,9 @@
      CLOCK: [2025-08-26 Di 14:35]--[2025-08-26 Di 15:26] =>  0:51
      :END:
 ** Features [0/0]
-** Bugs [0/1]
-*** TODO Make scanner skip broadcast address in IPv4 networks
+** Bugs [1/1]
+*** DONE Make scanner skip broadcast address in IPv4 networks
+    CLOSED: [2025-09-04 Do 19:53]
     :LOGBOOK:
     CLOCK: [2025-09-03 Mi 18:33]--[2025-09-03 Mi 19:25] =>  0:52
     :END:
