@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-19 18:44:40 krylon>
+// Time-stamp: <2025-09-03 19:20:26 krylon>
 
 package scanner
 
@@ -204,7 +204,7 @@ func (s *NetworkScanner) scanStart(n *model.Network) {
 	s.lock.Lock()
 	// defer s.lock.Unlock()
 	if _, ok := s.scanMap[n.ID]; ok {
-		s.log.Printf("[INFO] There appears to be a scan of network %s (%d) going on already.\n",
+		s.log.Printf("[TRACE] There appears to be a scan of network %s (%d) going on already.\n",
 			n.Addr.String(),
 			n.ID)
 		s.lock.Unlock()
@@ -347,35 +347,6 @@ func (s *NetworkScanner) netScanCollector(n *model.Network, devQ <-chan *model.D
 		}
 	}
 } // func (s *Scanner) netScanCollector(devQ <-chan *model.Device)
-
-// func (s *NetworkScanner) pingAddr(addr net.IP) bool {
-// 	var (
-// 		err  error
-// 		ping *probing.Pinger
-// 	)
-
-// 	if ping, err = probing.NewPinger(addr.String()); err != nil {
-// 		s.log.Printf("[ERROR] Failed to create Pinger for %s: %s\n",
-// 			addr,
-// 			err.Error())
-// 		return false
-// 	}
-
-// 	ping.Interval = pingInterval
-// 	ping.Timeout = s.timeout
-// 	ping.Count = pingCount
-
-// 	if err = ping.Run(); err != nil {
-// 		s.log.Printf("[ERROR] Failed to run Pinger on %s: %s\n",
-// 			addr,
-// 			err.Error())
-// 		return false
-// 	}
-
-// 	var stats = ping.Statistics()
-
-// 	return stats.PacketLoss < 100
-// } // func pingAddr(addr net.IP) bool
 
 func netIsDue(n *model.Network) bool {
 	return time.Since(n.LastScan) >= netScanPeriod
