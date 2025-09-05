@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-16 20:17:06 krylon>
+// Time-stamp: <2025-09-05 18:30:31 krylon>
 
 package main
 
@@ -17,6 +17,7 @@ import (
 
 	"github.com/blicero/carebear/common"
 	"github.com/blicero/carebear/database"
+	"github.com/blicero/carebear/scanner"
 	"github.com/blicero/carebear/scheduler"
 	"github.com/blicero/carebear/settings"
 	"github.com/blicero/carebear/web"
@@ -36,6 +37,7 @@ func main() {
 		sigQ     chan os.Signal
 		port     int
 		srv      *web.Server
+		scan     *scanner.NetworkScanner
 		sched    *scheduler.Scheduler
 	)
 
@@ -70,23 +72,29 @@ func main() {
 			"Failed to initialize global database connection pool: %s\n",
 			err.Error())
 		os.Exit(1)
+	} else if scan, err = scanner.NewNetworkScanner(); err != nil {
+		fmt.Fprintf(
+			os.Stderr,
+			"Failed to create NetworkScanner: %s\n",
+			err.Error())
+		os.Exit(1)
 	}
 
 	if addr == "" {
 		addr = fmt.Sprintf("[::1]:%d", common.DefaultPort)
 	}
 
-	if srv, err = web.Create(addr); err != nil {
+	if sched, err = scheduler.Create(scan); err != nil {
+		fmt.Fprintf(
+			os.Stderr,
+			"Error creating Scheduler: %s\n",
+			err.Error())
+		os.Exit(1)
+	} else if srv, err = web.Create(addr, scan, sched); err != nil {
 		fmt.Fprintf(
 			os.Stderr,
 			"Error creating web interface on %s: %s\n",
 			addr,
-			err.Error())
-		os.Exit(1)
-	} else if sched, err = scheduler.Create(); err != nil {
-		fmt.Fprintf(
-			os.Stderr,
-			"Error creating Scheduler: %s\n",
 			err.Error())
 		os.Exit(1)
 	}
@@ -110,74 +118,6 @@ func main() {
 			sig)
 		os.Exit(0)
 	}
-
-	// switch strings.ToLower(mode) {
-	// case "server":
-	// 	if addr == "" {
-	// 		addr = fmt.Sprintf("[::1]:%d", common.DefaultPort)
-	// 	}
-
-	// 	if srv, err = web.Create(addr); err != nil {
-	// 		fmt.Fprintf(
-	// 			os.Stderr,
-	// 			"Error creating web interface on %s: %s\n",
-	// 			addr,
-	// 			err.Error())
-	// 		os.Exit(1)
-	// 	}
-
-	// 	srv.Run()
-	// case "scanner":
-	// 	fmt.Println("Scanner is not ready, yet.")
-	// 	os.Exit(0)
-	// case "probe":
-	// 	var (
-	// 		osname   string
-	// 		keyFiles []string
-	// 		dev      = &model.Device{
-	// 			ID:    42,
-	// 			NetID: 23,
-	// 			Name:  addr,
-	// 			Addr: []net.Addr{
-	// 				&net.IPAddr{
-	// 					IP: net.ParseIP(addr),
-	// 				},
-	// 			},
-	// 			BigHead: true,
-	// 		}
-	// 	)
-
-	// 	if keyFiles, err = findKeyFiles(); err != nil {
-	// 		fmt.Fprintf(
-	// 			os.Stderr,
-	// 			"Failed to find SSH keys: %s\n",
-	// 			err.Error())
-	// 		os.Exit(1)
-	// 	}
-
-	// 	fmt.Printf("Using the following keys for authentication:\n%s\n",
-	// 		strings.Join(keyFiles, "\n"))
-
-	// 	if p, err = probe.New(username, keyFiles...); err != nil {
-	// 		fmt.Fprintf(
-	// 			os.Stderr,
-	// 			"Failed to create Probe: %s\n",
-	// 			err.Error(),
-	// 		)
-	// 		os.Exit(1)
-	// 	} else if osname, err = p.QueryOS(dev, port); err != nil {
-	// 		fmt.Fprintf(
-	// 			os.Stderr,
-	// 			"Failed to query OS running on %s: %s\n",
-	// 			dev.Name,
-	// 			err.Error())
-	// 		os.Exit(1)
-	// 	}
-
-	// 	fmt.Printf("%s is running %s\n",
-	// 		dev.Name,
-	// 		osname)
-	// }
 
 } // func main()
 

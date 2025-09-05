@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-09-04 18:46:33 krylon>
+// Time-stamp: <2025-09-05 18:17:30 krylon>
 
 package scanner
 
@@ -35,11 +35,17 @@ var (
 	netScanPeriod time.Duration = time.Minute * 10
 )
 
-// ScanProgress represents the progress of a given Network scan.
-type ScanProgress struct {
+type scanProgress struct {
 	Net     *model.Network
 	Scanned atomic.Uint64
 	Added   atomic.Uint64
+}
+
+// ScanProgress represents the progress of a given Network scan.
+type ScanProgress struct {
+	Net     *model.Network
+	Scanned uint64
+	Added   uint64
 }
 
 // NetworkScanner traverses IP networks looking for Devices.
@@ -49,7 +55,7 @@ type NetworkScanner struct {
 	CmdQ       chan command.Command
 	activeFlag atomic.Bool
 	db         *database.Database
-	scanMap    map[int64]*ScanProgress
+	scanMap    map[int64]*scanProgress
 	workerCnt  int64
 	timeout    time.Duration
 	pp         *ping.Pinger
@@ -61,7 +67,7 @@ func NewNetworkScanner() (*NetworkScanner, error) {
 		err error
 		s   = &NetworkScanner{
 			CmdQ:    make(chan command.Command),
-			scanMap: make(map[int64]*ScanProgress),
+			scanMap: make(map[int64]*scanProgress),
 			timeout: defaultTimeout,
 		}
 	)
@@ -102,40 +108,24 @@ func (s *NetworkScanner) Stop() {
 	s.activeFlag.Store(false)
 } // func (s *Scanner) Stop()
 
-// ScanCnt returns the number of Networks currently being scanned.
-func (s *NetworkScanner) ScanCnt() int {
-	s.lock.RLock()
-	var cnt = len(s.scanMap)
-	s.lock.RUnlock()
-	return cnt
-} // func (s *Scanner) ScanCnt() int
-
-// ScanProgress returns the progress of scanning the given Network.
-// In particular, it returns:
-// - the number of IP addresses scanned so far
-// - the number Devices added so far
-// - whether or not the given Network is currently being scanned.
-// If the given Network is not currently being scanned, the first two
-// numbers will be 0, obviously.
-func (s *NetworkScanner) ScanProgress(nid int64) (uint64, uint64, bool) {
+// GetProgress returns the network scans currently executing, and their
+// respective progress.
+func (s *NetworkScanner) GetProgress() map[int64]*ScanProgress {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
-	var (
-		ok              bool
-		prog            *ScanProgress
-		scanCnt, addCnt uint64
-	)
+	var m = make(map[int64]*ScanProgress, len(s.scanMap))
 
-	if prog, ok = s.scanMap[nid]; !ok {
-		return 0, 0, false
+	for nid, prog := range s.scanMap {
+		m[nid] = &ScanProgress{
+			Net:     prog.Net,
+			Scanned: prog.Scanned.Load(),
+			Added:   prog.Added.Load(),
+		}
 	}
 
-	scanCnt = prog.Scanned.Load()
-	addCnt = prog.Added.Load()
-
-	return scanCnt, addCnt, true
-} // func (s *Scanner) ScanProgress(nid int64) (uint64, uint64, bool)
+	return m
+} // func (s *NetworkScanner) GetProgress() map[int64]*ScanProgress
 
 func (s *NetworkScanner) run() {
 	var (
@@ -214,7 +204,7 @@ func (s *NetworkScanner) scanStart(n *model.Network) {
 		n.ID,
 		n.Addr)
 
-	s.scanMap[n.ID] = &ScanProgress{Net: n}
+	s.scanMap[n.ID] = &scanProgress{Net: n}
 	s.lock.Unlock()
 
 	defer func() {

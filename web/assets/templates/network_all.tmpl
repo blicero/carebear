@@ -1,6 +1,6 @@
 {{ define "network_all" }}
 {{/* Created on 10. 06. 2024 */}}
-{{/* Time-stamp: <2025-07-18 10:31:22 krylon> */}}
+{{/* Time-stamp: <2025-09-05 18:42:27 krylon> */}}
 <!DOCTYPE html>
 <html>
     {{ template "head" . }}
@@ -26,6 +26,7 @@
 
                 <tbody>
                     {{ $cnt := .DevCnt }}
+                    {{ $scans := .Scans }}
                     {{ range .Networks }}
                     <tr>
                         <td>{{ .ID }}</td>
@@ -36,7 +37,14 @@
                         </td>
                         <td>{{ .Description }}</td>
                         <td>{{ index $cnt .ID }}</td>
-                        <td>{{ fmt_time .LastScan }}</td>
+                        <td>
+                            {{ $prog := index $scans .ID }}
+                            {{ if eq $prog nil }}
+                            {{ fmt_time .LastScan }}
+                            {{ else }}
+                            Now (Scanned: {{ $prog.Scanned }}, Added: {{ $prog.Added }})
+                            {{ end }}
+                        </td>
                     </tr>
                     {{ end }}
                 </tbody>

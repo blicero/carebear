@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 24. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-30 14:45:29 krylon>
+// Time-stamp: <2025-09-05 18:28:49 krylon>
 
 // Package scheduler provides the logic to schedule tasks and execute them.
 package scheduler
@@ -53,7 +53,7 @@ type Scheduler struct {
 }
 
 // Create returns a fresh Scheduler.
-func Create() (*Scheduler, error) {
+func Create(sc *scanner.NetworkScanner) (*Scheduler, error) {
 	var (
 		err                     error
 		username, keypath, home string
@@ -68,11 +68,17 @@ func Create() (*Scheduler, error) {
 
 	if s.log, err = common.GetLogger(logdomain.Scheduler); err != nil {
 		return nil, err
-	} else if s.sc, err = scanner.NewNetworkScanner(); err != nil {
-		return nil, err
+		// } else if s.sc, err = scanner.NewNetworkScanner(); err != nil {
+		// 	return nil, err
 	} else if s.p, err = probe.New(username, keypath); err != nil {
 		return nil, err
 	} else if s.echo, err = ping.Create(); err != nil {
+		return nil, err
+	}
+
+	if sc != nil {
+		s.sc = sc
+	} else if s.sc, err = scanner.NewNetworkScanner(); err != nil {
 		return nil, err
 	}
 

@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 07. 06. 2024 by Benjamin Walkenhorst
 // (c) 2024 Benjamin Walkenhorst
-// Time-stamp: <2025-08-26 15:21:39 krylon>
+// Time-stamp: <2025-09-05 18:15:00 krylon>
 
 package web
 
@@ -27,11 +27,12 @@ import (
 	"github.com/blicero/carebear/database"
 	"github.com/blicero/carebear/logdomain"
 	"github.com/blicero/carebear/model"
+	"github.com/blicero/carebear/scanner"
+	"github.com/blicero/carebear/scheduler"
 	"github.com/gorilla/mux"
 )
 
-const ( // nolint: deadcode
-	poolSize     = 4
+const (
 	cacheControl = "max-age=3600, public"
 	noCache      = "no-store, max-age=0"
 )
@@ -51,16 +52,21 @@ type Server struct {
 	tmpl      *template.Template
 	web       http.Server
 	mimeTypes map[string]string
+	scanner   *scanner.NetworkScanner
+	scheduler *scheduler.Scheduler
 }
 
 // Create creates and returns a new Server.
-func Create(addr string) (*Server, error) {
+func Create(addr string, scan *scanner.NetworkScanner, sched *scheduler.Scheduler) (*Server, error) {
 	var (
 		err error
 		msg string
 		srv = &Server{
-			addr: addr,
-			mbuf: newMsgBuf(),
+			addr:      addr,
+			mbuf:      newMsgBuf(),
+			pool:      database.DBPool,
+			scanner:   scan,
+			scheduler: sched,
 			mimeTypes: map[string]string{
 				".css":  "text/css",
 				".map":  "application/json",
@@ -73,7 +79,6 @@ func Create(addr string) (*Server, error) {
 				".json": "application/json",
 				".html": "text/html",
 			},
-			pool: database.DBPool,
 		}
 	)
 
@@ -270,6 +275,8 @@ func (srv *Server) handleNetworkAll(w http.ResponseWriter, r *http.Request) {
 		srv.sendErrorMessage(w, msg)
 		return
 	}
+
+	data.Scans = srv.scanner.GetProgress()
 
 	if tmpl = srv.tmpl.Lookup(tmplName); tmpl == nil {
 		msg = fmt.Sprintf("Could not find template %q", tmplName)
