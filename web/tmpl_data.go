@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 06. 05. 2020 by Benjamin Walkenhorst
 // (c) 2020 Benjamin Walkenhorst
-// Time-stamp: <2025-09-05 18:07:26 krylon>
+// Time-stamp: <2025-09-06 16:16:11 krylon>
 //
 // This file contains data structures to be passed to HTML templates.
 
@@ -43,7 +43,21 @@ type tmplDataDeviceAll struct {
 	tmplDataBase
 	Devices []*model.Device
 	Updates map[int64]*model.Updates
+	Disk    map[int64]*model.DiskFree
 }
+
+func (d *tmplDataDeviceAll) DiskFree(devID int64) int64 {
+	var (
+		free *model.DiskFree
+		ok   bool
+	)
+
+	if free, ok = d.Disk[devID]; ok {
+		return free.PercentFree
+	}
+
+	return 100
+} // func (d *tmplDataDeviceAll) DiskFree(devID int64) (int64, bool)
 
 type tmplDataDeviceDetails struct {
 	tmplDataBase

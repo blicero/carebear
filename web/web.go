@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 07. 06. 2024 by Benjamin Walkenhorst
 // (c) 2024 Benjamin Walkenhorst
-// Time-stamp: <2025-09-05 18:15:00 krylon>
+// Time-stamp: <2025-09-06 16:05:26 krylon>
 
 package web
 
@@ -397,7 +397,7 @@ func (srv *Server) handleDeviceAll(w http.ResponseWriter, r *http.Request) {
 	db = srv.pool.Get()
 	defer srv.pool.Put(db)
 
-	if data.Devices, err = db.DeviceGetAll(); err != nil {
+	if data.Devices, err = db.DeviceGetAll(false); err != nil {
 		msg = fmt.Sprintf("Failed to load all devices: %s",
 			err.Error())
 		srv.log.Printf("[ERROR] %s\n", msg)
@@ -405,6 +405,12 @@ func (srv *Server) handleDeviceAll(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if updates, err = db.UpdatesGetRecent(); err != nil {
 		msg = fmt.Sprintf("Failed to load pending updates: %s",
+			err.Error())
+		srv.log.Printf("[ERROR] %s\n", msg)
+		srv.sendErrorMessage(w, msg)
+		return
+	} else if data.Disk, err = db.DiskFreeGet(); err != nil {
+		msg = fmt.Sprintf("Failed to load free disk info: %s",
 			err.Error())
 		srv.log.Printf("[ERROR] %s\n", msg)
 		srv.sendErrorMessage(w, msg)

@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 31. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-19 17:56:12 krylon>
+// Time-stamp: <2025-09-06 15:04:22 krylon>
 
 // Package settings deals with the configuration file. Duh.
 package settings
@@ -36,6 +36,7 @@ Workers = 32
 [Device]
 LiveTimeout = 600
 IntervalUpdates = 3600
+IntervalDiskFree = 1800
 
 [Ping]
 Interval = 500
@@ -54,18 +55,19 @@ Web = "TRACE"
 
 // Options defines several configurable parameters used throughout the application.
 type Options struct {
-	WebPort              int64
-	LiveTimeout          time.Duration
-	ScanIntervalNet      time.Duration
-	ScanIntervalDev      time.Duration
-	ScanWorkerCount      int64
-	Debug                bool
-	LogLevel             string
-	PoolSize             int64
-	ProbeIntervalUpdates time.Duration
-	PingInterval         time.Duration
-	PingTimeout          time.Duration
-	PingCount            int64
+	WebPort               int64
+	LiveTimeout           time.Duration
+	ScanIntervalNet       time.Duration
+	ScanIntervalDev       time.Duration
+	ScanWorkerCount       int64
+	Debug                 bool
+	LogLevel              string
+	PoolSize              int64
+	ProbeIntervalUpdates  time.Duration
+	ProbeIntervalDiskFree time.Duration
+	PingInterval          time.Duration
+	PingTimeout           time.Duration
+	PingCount             int64
 }
 
 var Settings *Options
@@ -107,6 +109,7 @@ func Parse(path string) (*Options, error) {
 	cfg.Debug = tree.Get("Global.Debug").(bool)
 	cfg.PoolSize = tree.Get("Global.PoolSize").(int64)
 	cfg.ProbeIntervalUpdates = time.Duration(tree.Get("Device.IntervalUpdates").(int64)) * time.Second
+	cfg.ProbeIntervalDiskFree = time.Duration(tree.Get("Device.IntervalDiskFree").(int64)) * time.Second
 	cfg.PingCount = tree.Get("Ping.Count").(int64)
 	cfg.PingInterval = time.Duration(tree.Get("Ping.Interval").(int64)) * time.Second
 	cfg.PingTimeout = time.Duration(tree.Get("Ping.Timeout").(int64)) * time.Millisecond

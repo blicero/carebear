@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 24. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-09-06 14:36:13 krylon>
+// Time-stamp: <2025-09-06 15:57:14 krylon>
 
 // Package scheduler provides the logic to schedule tasks and execute them.
 package scheduler
@@ -107,25 +107,28 @@ func (s *Scheduler) Start() {
 
 func (s *Scheduler) run() {
 	s.log.Println("[INFO] Scheduler starting up.")
-	s.log.Printf("[INFO] Scan interval: Net = %s, Devices = %s, Ping = %s, Updates = %s\n",
+	s.log.Printf("[INFO] Scan interval: Net = %s, Devices = %s, Ping = %s, Updates = %s, Disk space = %s\n",
 		settings.Settings.ScanIntervalNet,
 		settings.Settings.ScanIntervalDev,
 		settings.Settings.PingInterval,
-		settings.Settings.ProbeIntervalUpdates)
+		settings.Settings.ProbeIntervalUpdates,
+		settings.Settings.ProbeIntervalDiskFree)
 
 	defer s.log.Println("[INFO] Scheduler is quitting now.")
 
 	var (
-		tickScanNet      = time.NewTicker(settings.Settings.ScanIntervalNet)
-		tickScanDev      = time.NewTicker(settings.Settings.ScanIntervalDev)
-		tickCheckLive    = time.NewTicker(settings.Settings.PingInterval)
-		tickQueryUpdates = time.NewTicker(settings.Settings.ProbeIntervalUpdates)
+		tickScanNet       = time.NewTicker(settings.Settings.ScanIntervalNet)
+		tickScanDev       = time.NewTicker(settings.Settings.ScanIntervalDev)
+		tickCheckLive     = time.NewTicker(settings.Settings.PingInterval)
+		tickQueryUpdates  = time.NewTicker(settings.Settings.ProbeIntervalUpdates)
+		tickQueryDiskFree = time.NewTicker(settings.Settings.ProbeIntervalDiskFree)
 	)
 
 	defer tickScanNet.Stop()
 	defer tickScanDev.Stop()
 	defer tickCheckLive.Stop()
 	defer tickQueryUpdates.Stop()
+	defer tickQueryDiskFree.Stop()
 
 	for s.IsActive() {
 		select {
@@ -145,6 +148,14 @@ func (s *Scheduler) run() {
 
 			for i := range probeWorkerCnt {
 				go s.queryDeviceUpdateWorker(i, updateQ)
+			}
+		case <-tickQueryDiskFree.C:
+			s.log.Println("[INFO] Query free disk space")
+			var diskQ = make(chan *model.Device)
+			go s.deviceDispatch(diskQ)
+
+			for i := range probeWorkerCnt {
+				go s.queryDeviceDiskFreeWorker(i, diskQ)
 			}
 		}
 	}
@@ -197,7 +208,7 @@ func (s *Scheduler) scanDevices() {
 	db = s.pool.Get()
 	defer s.pool.Put(db)
 
-	if devs, err = db.DeviceGetAll(); err != nil {
+	if devs, err = db.DeviceGetAll(true); err != nil {
 		s.log.Printf("[ERROR] Failed to load all Devices: %s\n",
 			err.Error())
 		return
@@ -302,7 +313,7 @@ func (s *Scheduler) deviceDispatch(devQ chan<- *model.Device) {
 	db = s.pool.Get()
 	defer s.pool.Put(db)
 
-	if devs, err = db.DeviceGetAll(); err != nil {
+	if devs, err = db.DeviceGetAll(true); err != nil {
 		s.log.Printf("[ERROR] Failed to load all Devices: %s\n",
 			err.Error())
 		return
@@ -342,7 +353,7 @@ func (s *Scheduler) queryDeviceUpdateWorker(id int, devQ <-chan *model.Device) {
 					err.Error())
 			}
 			continue
-		} else if updates.AvailableUpdates == nil || len(updates.AvailableUpdates) == 0 {
+		} else if len(updates.AvailableUpdates) == 0 {
 			s.log.Printf("[TRACE] No updates were found for %s\n",
 				d.Name)
 			continue
@@ -354,4 +365,41 @@ func (s *Scheduler) queryDeviceUpdateWorker(id int, devQ <-chan *model.Device) {
 			continue
 		}
 	}
-} // func (s *Scheduler) queryDeviceUpdateWorker()
+} // func (s *Scheduler) queryDeviceUpdateWorker(id int, devQ <-chan *model.Device)
+
+func (s *Scheduler) queryDeviceDiskFreeWorker(id int, devQ <-chan *model.Device) {
+	var (
+		err error
+		db  *database.Database
+	)
+
+	defer s.log.Printf("[DEBUG] queryDeviceDiskFreeWorker #%02d is quitting.\n",
+		id)
+
+	db = s.pool.Get()
+	defer s.pool.Put(db)
+
+	for d := range devQ {
+		var free = &model.DiskFree{
+			DevID:     d.ID,
+			Timestamp: time.Now(),
+		}
+
+		s.log.Printf("[TRACE] %02d: Query %s for free disk space\n",
+			id,
+			d.Name)
+
+		if free.PercentFree, err = s.p.QueryDiskFree(d, 22); err != nil {
+			s.log.Printf("[ERROR] %02d Failed to query %s for free disk space: %s\n",
+				id,
+				d.Name,
+				err.Error())
+			continue
+		} else if err = db.DiskFreeAdd(d, free); err != nil {
+			s.log.Printf("[ERROR] %02d Failed to add free disk space for %s to Database: %s\n",
+				id,
+				d.Name,
+				err.Error())
+		}
+	}
+} // func (s *Scheduler) queryDeviceDiskFreeWorker(id int, devQ <- chan *model.Device)
