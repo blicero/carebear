@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 07. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-07-08 19:40:34 krylon>
+// Time-stamp: <2025-09-06 15:57:17 krylon>
 
 package database
 
@@ -77,7 +77,7 @@ func TestDeviceGetall(t *testing.T) {
 		xdev []*model.Device
 	)
 
-	if xdev, err = tdb.DeviceGetAll(); err != nil {
+	if xdev, err = tdb.DeviceGetAll(false); err != nil {
 		t.Fatalf("Failed to load all Devices: %s",
 			err.Error())
 	} else if xdev == nil {

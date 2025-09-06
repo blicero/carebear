@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 04. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-09-05 20:30:54 krylon>
+// Time-stamp: <2025-09-06 15:23:25 krylon>
 
 package database
 
@@ -182,10 +182,10 @@ WITH recent AS (
     SELECT id,
            dev_id,
            timestamp,
-           data
-           ROW_NUMBER() OVER (PARTITION BY dev_id ORDER BY timestamp DESC) AS info_no
+           data,
+           info_type,
+           ROW_NUMBER() OVER (PARTITION BY dev_id, info_type ORDER BY timestamp DESC) AS info_no
     FROM info
-    WHERE info_type = ?
 )
 
 SELECT
@@ -193,6 +193,7 @@ SELECT
     dev_id,
     timestamp,
     data
-FROM recent WHERE info_no = 1
+FROM recent
+WHERE info_no = 1 AND info_type = ?
 `,
 }

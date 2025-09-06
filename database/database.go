@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-09-05 21:38:34 krylon>
+// Time-stamp: <2025-09-06 15:54:30 krylon>
 
 package database
 
@@ -1082,7 +1082,7 @@ EXEC_QUERY:
 } // func (db *Database) DeviceUpdateOS(dev *model.Device, osname string) error
 
 // DeviceGetAll loads all Devices from the Database.
-func (db *Database) DeviceGetAll() ([]*model.Device, error) {
+func (db *Database) DeviceGetAll(bigheadOnly bool) ([]*model.Device, error) {
 	const qid query.ID = query.DeviceGetAll
 	var (
 		err  error
@@ -1133,6 +1133,10 @@ EXEC_QUERY:
 			return nil, ex
 		}
 
+		if bigheadOnly && !dev.BigHead {
+			continue
+		}
+
 		var alist = make([]string, 0, 2)
 
 		if err = json.Unmarshal([]byte(addr), &alist); err != nil {
@@ -1165,7 +1169,7 @@ EXEC_QUERY:
 	}
 
 	return devices, nil
-} // func (db *Database) DeviceGetAll() ([]*model.Device, error)
+} // func (db *Database) DeviceGetAll(bigheadOnly bool) ([]*model.Device, error)
 
 // DeviceGetByID loads a Device by its ID, if it exists.
 func (db *Database) DeviceGetByID(id int64) (*model.Device, error) {
