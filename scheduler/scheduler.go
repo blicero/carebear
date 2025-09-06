@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 24. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-09-05 18:28:49 krylon>
+// Time-stamp: <2025-09-06 14:36:13 krylon>
 
 // Package scheduler provides the logic to schedule tasks and execute them.
 package scheduler
@@ -342,7 +342,7 @@ func (s *Scheduler) queryDeviceUpdateWorker(id int, devQ <-chan *model.Device) {
 					err.Error())
 			}
 			continue
-		} else if updates.AvailableUpdates == nil {
+		} else if updates.AvailableUpdates == nil || len(updates.AvailableUpdates) == 0 {
 			s.log.Printf("[TRACE] No updates were found for %s\n",
 				d.Name)
 			continue
@@ -353,13 +353,5 @@ func (s *Scheduler) queryDeviceUpdateWorker(id int, devQ <-chan *model.Device) {
 				strings.Join(updates.AvailableUpdates, "\n"))
 			continue
 		}
-
-		if len(updates.AvailableUpdates) > 0 {
-			s.log.Printf("[DEBUG] Device %s has %d available updates:\n%s\n",
-				d.Name,
-				len(updates.AvailableUpdates),
-				strings.Join(updates.AvailableUpdates, "\n"))
-		}
-
 	}
 } // func (s *Scheduler) queryDeviceUpdateWorker()
