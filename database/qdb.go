@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 04. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-06 17:47:32 krylon>
+// Time-stamp: <2025-09-05 20:30:54 krylon>
 
 package database
 
@@ -171,5 +171,28 @@ SELECT
     updates
 FROM recent WHERE update_no = 1
 ORDER BY timestamp DESC
+`,
+	query.InfoAdd: `
+INSERT INTO info (dev_id, timestamp, info_type, data)
+          VALUES (     ?,         ?,         ?,    ?)
+RETURNING id
+`,
+	query.InfoGetRecent: `
+WITH recent AS (
+    SELECT id,
+           dev_id,
+           timestamp,
+           data
+           ROW_NUMBER() OVER (PARTITION BY dev_id ORDER BY timestamp DESC) AS info_no
+    FROM info
+    WHERE info_type = ?
+)
+
+SELECT
+    id,
+    dev_id,
+    timestamp,
+    data
+FROM recent WHERE info_no = 1
 `,
 }

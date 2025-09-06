@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-09-03 19:16:29 krylon>
+// Time-stamp: <2025-09-05 19:47:54 krylon>
 
 // Package model provides data types used throughout the application.
 package model
@@ -139,3 +139,12 @@ func (up *Updates) UpdatesPending() bool {
 // 		}
 // 	}
 // }
+
+// DiskFree captures the percentage of free disk space on the root
+// filesystem of a Device.
+type DiskFree struct {
+	ID          int64
+	DevID       int64
+	Timestamp   time.Time
+	PercentFree int64
+}

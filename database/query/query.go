@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-05 19:11:32 krylon>
+// Time-stamp: <2025-09-05 20:08:42 krylon>
 
 // Package query provides symbolic constants to identifiy database queries.
 package query
@@ -36,4 +36,6 @@ const (
 	UpdatesAdd
 	UpdatesGetByDevice
 	UpdatesGetRecent
+	InfoAdd
+	InfoGetRecent
 )

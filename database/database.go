@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-08 18:30:03 krylon>
+// Time-stamp: <2025-09-05 21:38:34 krylon>
 
 package database
 
@@ -23,6 +23,7 @@ import (
 	"github.com/blicero/carebear/database/query"
 	"github.com/blicero/carebear/logdomain"
 	"github.com/blicero/carebear/model"
+	"github.com/blicero/carebear/model/info"
 	"github.com/blicero/krylib"
 	_ "github.com/mattn/go-sqlite3" // Import the database driver
 )
@@ -1687,3 +1688,127 @@ EXEC_QUERY:
 
 	return data, nil
 } // func (db *Database) UpdatesGetRecent() ([]*model.Updates, error)
+
+func (db *Database) DiskFreeAdd(dev *model.Device, free *model.DiskFree) error {
+	const qid query.ID = query.InfoAdd
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if dev.ID != free.DevID {
+		return fmt.Errorf("DiskFree info does not belong to Device %s",
+			dev.Name)
+	} else if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Failed to prepare query %s: %s\n",
+			qid,
+			err.Error())
+		panic(err)
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var (
+		rows    *sql.Rows
+		freeStr string
+		buf     []byte
+	)
+
+	if buf, err = json.Marshal(free.PercentFree); err != nil {
+		db.log.Printf("[ERROR] Failed to serialize free disk space: %s\n\n%d\n\n",
+			err.Error(),
+			free.PercentFree)
+	}
+
+	freeStr = string(buf)
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(free.DevID, free.Timestamp.Unix(), info.DiskFree, freeStr); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		} else {
+			err = fmt.Errorf("Cannot add Uptime for Device %s: %w",
+				dev.Name,
+				err)
+			db.log.Printf("[ERROR] %s\n", err.Error())
+			return err
+		}
+	} else {
+		var id int64
+
+		defer rows.Close()
+
+		if !rows.Next() {
+			// CANTHAPPEN
+			db.log.Printf("[ERROR] Query %s did not return a value\n",
+				qid)
+			return fmt.Errorf("Query %s did not return a value", qid)
+		} else if err = rows.Scan(&id); err != nil {
+			var ex = fmt.Errorf("Failed to get ID for newly added Uptime: %w",
+				err)
+			db.log.Printf("[ERROR] %s\n", ex.Error())
+			return ex
+		}
+
+		free.ID = id
+		return nil
+	}
+} // func (db *Database) DiskFreeAdd(dev *model.Device, free *model.DiskFree) error
+
+func (db *Database) DiskFreeGet() (map[int64]*model.DiskFree, error) {
+	const qid query.ID = query.InfoGetRecent
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(info.DiskFree); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+	var data = make(map[int64]*model.DiskFree)
+
+	for rows.Next() {
+		var (
+			stamp   int64
+			free    *model.DiskFree = &model.DiskFree{}
+			dataStr string
+		)
+
+		if err = rows.Scan(&free.ID, &free.DevID, &stamp, &dataStr); err != nil {
+			var ex = fmt.Errorf("Failed to scan row: %w", err)
+			db.log.Printf("[ERROR] %s\n", ex.Error())
+			return nil, ex
+		} else if err = json.Unmarshal([]byte(dataStr), &free.PercentFree); err != nil {
+			var ex = fmt.Errorf("Failed to parse free disk space from JSON: %w\n\n%s",
+				err,
+				dataStr)
+			db.log.Printf("[ERROR] %s\n", ex.Error())
+			return nil, ex
+		}
+
+		free.Timestamp = time.Unix(stamp, 0)
+		data[free.DevID] = free
+	}
+
+	return data, nil
+} // func (db *Database) DiskFreeGet(dev *model.Device) (*model.DiskFree, error)

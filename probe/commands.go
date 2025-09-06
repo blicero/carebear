@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-09-04 18:04:34 krylon>
+// Time-stamp: <2025-09-05 19:40:19 krylon>
 
 package probe
 
@@ -352,3 +352,49 @@ func (p *Probe) QueryUptime(d *model.Device, port int) (*model.Uptime, error) {
 
 	return up, nil
 } // func (p *Probe) QueryLoadAvg(d *model.Device, port int) ([3]float64, error)
+
+var dfPat = regexp.MustCompile("(\\d+%")
+
+// QueryDiskFree queries a Device for the free disk space on its root filesystem.
+func (p *Probe) QueryDiskFree(d *model.Device, port int) (int64, error) {
+	const cmd = "env LC_ALL=en_EN.UTF-8 df -h /"
+	var (
+		err        error
+		res, match []string
+		used, free int64
+	)
+
+	if res, err = p.executeCommand(d, port, cmd); err != nil {
+		if err == ErrPingOffline {
+			return 0, err
+		}
+		var ex = fmt.Errorf("Failed to query free disk space on %s: %w",
+			d.Name,
+			err)
+		p.log.Printf("[ERROR] %s\n", ex.Error())
+		return 0, ex
+	} else if len(res) < 2 {
+		var ex = fmt.Errorf("Cannot parse output of \"df -h\" on %s: %s\n",
+			d.Name,
+			strings.Join(res, "\n"))
+		p.log.Printf("[ERROR] %s\n", ex.Error())
+		return 0, ex
+	} else if match = dfPat.FindStringSubmatch(res[1]); match == nil {
+		var ex = fmt.Errorf("Cannot parse output of \"df -h\" on %s: %s\n",
+			d.Name,
+			strings.Join(res, "\n"))
+		p.log.Printf("[ERROR] %s\n", ex.Error())
+		return 0, ex
+	} else if used, err = strconv.ParseInt(match[1], 10, 64); err != nil {
+		var ex = fmt.Errorf("Cannot parse free disk space on %s: %q - %w\n",
+			d.Name,
+			match[1],
+			err)
+		p.log.Printf("[ERROR] %s\n", ex.Error())
+		return 0, ex
+	}
+
+	free = 100 - used
+
+	return free, nil
+} // func (p *Probe) QueryDiskFree(d *model.Device, port int) (int64, error)

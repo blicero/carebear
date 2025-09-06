@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-08-05 19:10:21 krylon>
+// Time-stamp: <2025-09-05 20:01:48 krylon>
 
 package database
 
@@ -59,7 +59,7 @@ CREATE TRIGGER up_host_contact_tr
 AFTER INSERT ON uptime
 BEGIN
     UPDATE device
-    SET last_seen = unixepoch()
+    SET last_seen = NEW.timestamp
     WHERE id = NEW.dev_id;
 END
 `,
@@ -83,7 +83,33 @@ CREATE TRIGGER upd_host_contact_tr
 AFTER INSERT ON updates
 BEGIN
     UPDATE device
-    SET last_seen = unixepoch()
+    SET last_seen = NEW.timestamp
+    WHERE id = NEW.dev_id;
+END
+`,
+	`
+CREATE TABLE info (
+    id INTEGER PRIMARY KEY,
+    dev_id INTEGER NOT NULL,
+    timestamp INTEGER NOT NULL,
+    info_type INTEGER NOT NULL,
+    data TEXT NOT NULL DEFAULT '',
+    UNIQUE (dev_id, info_type, timestamp),
+    CHECK (json_valid(data)),
+    FOREIGN KEY (dev_id) REFERENCES device (id)
+        ON UPDATE RESTRICT
+        ON DELETE CASCADE
+) STRICT
+`,
+	"CREATE INDEX info_dev_idx ON info (dev_id)",
+	"CREATE INDEX info_time_idx ON info (timestamp)",
+	"CREATE INDEX info_type_idx ON info (info_type)",
+	`
+CREATE TRIGGER info_host_tr
+AFTER INSERT ON info
+BEGIN
+    UPDATE device
+    SET last_seen = NEW.timestamp
     WHERE id = NEW.dev_id;
 END
 `,

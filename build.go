@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 01. 02. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2025-08-30 14:03:28 krylon>
+// Time-stamp: <2025-09-05 19:45:35 krylon>
 
 //go:build ignore
 // +build ignore
@@ -59,12 +59,14 @@ var candidates = map[string][]string{
 	"generate": {
 		"common",
 		"logdomain",
+		"model/info",
 		"database/query",
 		"scanner/command",
 		"scheduler/task",
 	},
 	"test": {
 		"database",
+		"model",
 		"probe",
 		"settings",
 		"web",
@@ -75,6 +77,7 @@ var candidates = map[string][]string{
 		"database",
 		"database/query",
 		"model",
+		"model/info",
 		"ping",
 		"probe",
 		"scanner",
@@ -89,6 +92,7 @@ var candidates = map[string][]string{
 		"database",
 		"database/query",
 		"model",
+		"model/info",
 		"ping",
 		"probe",
 		"scanner",
