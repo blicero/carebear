@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2025-09-05 19:09:19 krylon>
+# Time-stamp: <2025-09-06 14:40:43 krylon>
 #+TAGS: internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
 #+TAGS: optimize(o) refactor(r) cleanup(c)
@@ -14,48 +14,49 @@
   :END:
 ** Clocktable
    #+BEGIN: clocktable :scope file :maxlevel 255 :emphasize t
-   #+CAPTION: Clock summary at [2025-09-05 Fr 19:09]
-   | Headline                                        | Time       |            |          |      |      |      |
-   |-------------------------------------------------+------------+------------+----------+------+------+------|
-   | *Total time*                                    | *4d 22:28* |            |          |      |      |      |
-   |-------------------------------------------------+------------+------------+----------+------+------+------|
-   | *Care Bear [27/31]*                             | *4d 22:28* |            |          |      |      |      |
-   | \_  /Components [26/30]/                        |            | /4d 21:36/ |          |      |      |      |
-   | \_    Common [3/3]                              |            |            |     0:27 |      |      |      |
-   | \_      Make default log level configurable     |            |            |          | 0:06 |      |      |
-   | \_      Make all log levels configurable        |            |            |          | 0:15 |      |      |
-   | \_      Prettify / Justify output of Logger     |            |            |          | 0:06 |      |      |
-   | \_    Model [1/1]                               |            |            |     0:40 |      |      |      |
-   | \_      Test IP enumeration                     |            |            |          | 0:28 |      |      |
-   | \_    Database [2/2]                            |            |            |     7:32 |      |      |      |
-   | \_      Extend schema                           |            |            |          | 2:10 |      |      |
-   | \_      Make connection pool global             |            |            |          | 0:41 |      |      |
-   | \_    Scanner [4/4]                             |            |            |    15:51 |      |      |      |
-   | \_      Add a way to scan a specific network    |            |            |          | 0:53 |      |      |
-   | \_      Make progress of scan more visible      |            |            |          | 1:28 |      |      |
-   | \_      Make number of workers configurable     |            |            |          | 0:24 |      |      |
-   | \_      Detect new devices?                     |            |            |          | 2:00 |      |      |
-   | \_    Probe [9/13]                              |            |            |    16:03 |      |      |      |
-   | \_      Implement commands [7/10]               |            |            |          | 5:31 |      |      |
-   | \_        Available updates [6/6]               |            |            |          |      | 5:31 |      |
-   | \_          Debian                              |            |            |          |      |      | 0:18 |
-   | \_          openSUSE                            |            |            |          |      |      | 0:53 |
-   | \_          FreeBSD                             |            |            |          |      |      | 0:29 |
-   | \_          OpenBSD                             |            |            |          |      |      | 0:19 |
-   | \_          Arch                                |            |            |          |      |      | 0:49 |
-   | \_    Scheduler [1/1]                           |            |            | 2d 10:13 |      |      |      |
-   | \_      Ping Device before probing              |            |            |          | 2:17 |      |      |
-   | \_    Settings [2/2]                            |            |            |     5:34 |      |      |      |
-   | \_      Integrate Settings into other packages  |            |            |          | 4:54 |      |      |
-   | \_        Interval for querying pending updates |            |            |          |      | 3:57 |      |
-   | \_    Web UI [4/4]                              |            |            |    13:16 |      |      |      |
-   | \_      Display more activity in web interface  |            |            |          | 1:22 |      |      |
-   | \_      Add summary to <details>                |            |            |          | 0:01 |      |      |
-   | \_      Highlight Devices that are online       |            |            |          | 0:46 |      |      |
-   | \_      Present sysload info and updates in UI  |            |            |          | 0:46 |      |      |
-   | \_      Display pending updates                 |            |            |          | 1:22 |      |      |
-   | \_  /Bugs [1/1]/                                |            | /0:52/     |          |      |      |      |
-   | \_    Make scanner skip broadcast address...    |            |            |     0:52 |      |      |      |
+   #+CAPTION: Clock summary at [2025-09-06 Sa 14:40]
+   | Headline                                        | Time      |            |          |      |      |      |
+   |-------------------------------------------------+-----------+------------+----------+------+------+------|
+   | *Total time*                                    | *5d 0:51* |            |          |      |      |      |
+   |-------------------------------------------------+-----------+------------+----------+------+------+------|
+   | *Care Bear [27/31]*                             | *5d 0:51* |            |          |      |      |      |
+   | \_  /Components [26/30]/                        |           | /4d 23:59/ |          |      |      |      |
+   | \_    Common [3/3]                              |           |            |     0:27 |      |      |      |
+   | \_      Make default log level configurable     |           |            |          | 0:06 |      |      |
+   | \_      Make all log levels configurable        |           |            |          | 0:15 |      |      |
+   | \_      Prettify / Justify output of Logger     |           |            |          | 0:06 |      |      |
+   | \_    Model [1/1]                               |           |            |     0:40 |      |      |      |
+   | \_      Test IP enumeration                     |           |            |          | 0:28 |      |      |
+   | \_    Database [2/2]                            |           |            |     7:32 |      |      |      |
+   | \_      Extend schema                           |           |            |          | 2:10 |      |      |
+   | \_      Make connection pool global             |           |            |          | 0:41 |      |      |
+   | \_    Scanner [4/4]                             |           |            |    15:51 |      |      |      |
+   | \_      Add a way to scan a specific network    |           |            |          | 0:53 |      |      |
+   | \_      Make progress of scan more visible      |           |            |          | 1:28 |      |      |
+   | \_      Make number of workers configurable     |           |            |          | 0:24 |      |      |
+   | \_      Detect new devices?                     |           |            |          | 2:00 |      |      |
+   | \_    Probe [9/13]                              |           |            |    18:26 |      |      |      |
+   | \_      Implement commands [7/10]               |           |            |          | 7:54 |      |      |
+   | \_        Available updates [6/6]               |           |            |          |      | 5:31 |      |
+   | \_          Debian                              |           |            |          |      |      | 0:18 |
+   | \_          openSUSE                            |           |            |          |      |      | 0:53 |
+   | \_          FreeBSD                             |           |            |          |      |      | 0:29 |
+   | \_          OpenBSD                             |           |            |          |      |      | 0:19 |
+   | \_          Arch                                |           |            |          |      |      | 0:49 |
+   | \_        Free disk space                       |           |            |          |      | 2:23 |      |
+   | \_    Scheduler [1/1]                           |           |            | 2d 10:13 |      |      |      |
+   | \_      Ping Device before probing              |           |            |          | 2:17 |      |      |
+   | \_    Settings [2/2]                            |           |            |     5:34 |      |      |      |
+   | \_      Integrate Settings into other packages  |           |            |          | 4:54 |      |      |
+   | \_        Interval for querying pending updates |           |            |          |      | 3:57 |      |
+   | \_    Web UI [4/4]                              |           |            |    13:16 |      |      |      |
+   | \_      Display more activity in web interface  |           |            |          | 1:22 |      |      |
+   | \_      Add summary to <details>                |           |            |          | 0:01 |      |      |
+   | \_      Highlight Devices that are online       |           |            |          | 0:46 |      |      |
+   | \_      Present sysload info and updates in UI  |           |            |          | 0:46 |      |      |
+   | \_      Display pending updates                 |           |            |          | 1:22 |      |      |
+   | \_  /Bugs [1/1]/                                |           | /0:52/     |          |      |      |      |
+   | \_    Make scanner skip broadcast address...    |           |            |     0:52 |      |      |      |
    #+END:
 ** Components [26/30]
    :PROPERTIES:
@@ -234,6 +235,9 @@
        :END:
        *Caveat* - this requires the package pacman-contrib to be installed.
 ***** TODO Free disk space
+      :LOGBOOK:
+      CLOCK: [2025-09-05 Fr 19:27]--[2025-09-05 Fr 21:50] =>  2:23
+      :END:
 ***** MEDITATE Temperature?
 ***** MEDITATE Needs reboot?
 **** DONE Connect via SSH
