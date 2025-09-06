@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 07. 2025 by Benjamin Walkenhorst
 // (c) 2025 Benjamin Walkenhorst
-// Time-stamp: <2025-09-05 19:40:19 krylon>
+// Time-stamp: <2025-09-06 15:16:44 krylon>
 
 package probe
 
@@ -353,7 +353,7 @@ func (p *Probe) QueryUptime(d *model.Device, port int) (*model.Uptime, error) {
 	return up, nil
 } // func (p *Probe) QueryLoadAvg(d *model.Device, port int) ([3]float64, error)
 
-var dfPat = regexp.MustCompile("(\\d+%")
+var dfPat = regexp.MustCompile(`(\d+)%`)
 
 // QueryDiskFree queries a Device for the free disk space on its root filesystem.
 func (p *Probe) QueryDiskFree(d *model.Device, port int) (int64, error) {
